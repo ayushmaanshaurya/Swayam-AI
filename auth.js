@@ -24,12 +24,7 @@ loginForm.addEventListener("submit", async (e) => {
   const username = document.getElementById("loginUser").value;
   const password = document.getElementById("loginPass").value;
 
-  if (!username || !password) {
-    alert("Please fill all fields");
-    return;
-  }
-
-  const res = await fetch("http://localhost:3001/api/login", {
+  const res = await fetch("/api/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password })
@@ -53,17 +48,12 @@ registerForm.addEventListener("submit", async (e) => {
   const password = document.getElementById("regPass").value;
   const file = document.getElementById("profilePic").files[0];
 
-  if (!username || !password) {
-    alert("Please fill all fields");
-    return;
-  }
-
   const formData = new FormData();
   formData.append("username", username);
   formData.append("password", password);
   if (file) formData.append("profilePic", file);
 
-  await fetch("http://localhost:3001/api/register", {
+  await fetch("/api/register", {
     method: "POST",
     body: formData
   });

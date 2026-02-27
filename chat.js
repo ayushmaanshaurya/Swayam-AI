@@ -1,4 +1,10 @@
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "index.html";
+    return;
+  }
 
   const splash = document.getElementById("splashScreen");
   const mainApp = document.getElementById("mainApp");
@@ -6,7 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (splash && mainApp) {
     setTimeout(() => {
       splash.style.opacity = "0";
-      splash.style.transition = "0.6s ease";
       setTimeout(() => {
         splash.style.display = "none";
         mainApp.style.display = "flex";
@@ -14,24 +19,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, 2500);
   }
 
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    window.location.href = "auth.html";
-    return;
-  }
-
   const profilePic = localStorage.getItem("profilePic");
   const navProfilePic = document.getElementById("navProfilePic");
 
   if (profilePic && navProfilePic) {
-    navProfilePic.src = "http://localhost:3001/uploads/" + profilePic;
+    navProfilePic.src = "/uploads/" + profilePic;
   }
 
   document.getElementById("logoutBtn")?.addEventListener("click", () => {
     localStorage.removeItem("token");
     localStorage.removeItem("profilePic");
-    window.location.href = "auth.html";
+    window.location.href = "index.html";
   });
 
   const chatForm = document.getElementById("chat-form");
@@ -51,8 +49,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function speakText(text) {
     const speech = new SpeechSynthesisUtterance(text);
     speech.lang = currentLang;
-    speech.rate = 1;
-    speech.pitch = 1;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(speech);
   }
@@ -67,7 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     userInput.value = "";
 
     try {
-      const res = await fetch("http://localhost:3001/api/explain", {
+      const res = await fetch("/api/explain-secure", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,13 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (langToggle) {
     langToggle.addEventListener("click", () => {
-      if (currentLang === "en-IN") {
-        currentLang = "hi-IN";
-        langToggle.textContent = "HI";
-      } else {
-        currentLang = "en-IN";
-        langToggle.textContent = "EN";
-      }
+      currentLang = currentLang === "en-IN" ? "hi-IN" : "en-IN";
+      langToggle.textContent = currentLang === "en-IN" ? "EN" : "HI";
     });
   }
 
@@ -105,9 +96,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
 
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
     micBtn.addEventListener("click", () => {
       recognition.lang = currentLang;
       recognition.start();
@@ -115,14 +103,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      userInput.value = transcript;
+      userInput.value = event.results[0][0].transcript;
       micBtn.classList.remove("recording");
       chatForm.dispatchEvent(new Event("submit"));
-    };
-
-    recognition.onerror = () => {
-      micBtn.classList.remove("recording");
     };
 
     recognition.onend = () => {
@@ -133,25 +116,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const anthemBtn = document.getElementById("anthemBtn");
   const anthemAudio = document.getElementById("anthemAudio");
 
-  let isPlaying = false;
-
   if (anthemBtn && anthemAudio) {
     anthemBtn.addEventListener("click", () => {
-      if (!isPlaying) {
+      if (anthemAudio.paused) {
         anthemAudio.play();
         anthemBtn.style.background = "#138808";
-        isPlaying = true;
       } else {
         anthemAudio.pause();
         anthemAudio.currentTime = 0;
         anthemBtn.style.background = "";
-        isPlaying = false;
       }
-    });
-
-    anthemAudio.addEventListener("ended", () => {
-      anthemBtn.style.background = "";
-      isPlaying = false;
     });
   }
 
