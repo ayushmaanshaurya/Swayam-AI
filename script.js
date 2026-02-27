@@ -12,10 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let chats = JSON.parse(localStorage.getItem("chats")) || {};
   let currentChatId = null;
 
+  // ================= SAVE =================
   function saveChats() {
     localStorage.setItem("chats", JSON.stringify(chats));
   }
 
+  // ================= NEW CHAT =================
   function createNewChat() {
     currentChatId = Date.now().toString();
     chats[currentChatId] = [];
@@ -24,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveChats();
   }
 
+  // ================= CHAT LIST =================
   function renderChatList() {
     chatList.innerHTML = "";
     Object.keys(chats).forEach(id => {
@@ -38,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ================= RENDER MESSAGES =================
   function renderMessages() {
     chatBox.innerHTML = "";
     if (!chats[currentChatId]) return;
@@ -47,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ================= ADD MESSAGE =================
   function addMessage(content, sender, save = true) {
     const msg = document.createElement("div");
     msg.className = `message ${sender}`;
@@ -67,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     addCopyButtons();
   }
 
+  // ================= COPY BUTTON =================
   function addCopyButtons() {
     document.querySelectorAll("pre").forEach(block => {
       if (block.querySelector(".copy-btn")) return;
@@ -74,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const btn = document.createElement("button");
       btn.textContent = "Copy";
       btn.className = "copy-btn";
+
       btn.onclick = () => {
         navigator.clipboard.writeText(block.innerText);
         btn.textContent = "Copied!";
@@ -89,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ================= STREAM TEXT =================
   async function streamText(element, text) {
     element.innerHTML = "<strong>AI:</strong><div></div>";
     const div = element.querySelector("div");
@@ -101,15 +109,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 10);
   }
 
+  // ================= API CALL (FIXED FOR PRODUCTION) =================
   async function callAPI(endpoint, topic) {
-    const res = await fetch(`http://localhost:3001${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic })
-    });
-    return res.json();
+    try {
+      const res = await fetch(endpoint, {   // ✅ NO localhost
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic })
+      });
+
+      if (!res.ok) throw new Error("Server error");
+
+      return await res.json();
+
+    } catch (error) {
+      return { reply: "Server connection failed. Please try again." };
+    }
   }
 
+  // ================= HANDLE REQUEST =================
   async function handleRequest(endpoint) {
     const topic = userInput.value.trim();
     if (!topic) return;
@@ -128,6 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveChats();
   }
 
+  // ================= EVENTS =================
   chatForm.addEventListener("submit", (e) => {
     e.preventDefault();
     handleRequest("/api/explain");
@@ -142,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   newChatBtn.addEventListener("click", createNewChat);
 
+  // ================= INIT =================
   if (!currentChatId) createNewChat();
   renderChatList();
 
