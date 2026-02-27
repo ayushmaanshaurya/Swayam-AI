@@ -8,32 +8,46 @@
 </head>
 <body>
 
-<div class="auth-wrapper">
+<!-- Splash Screen -->
+<div id="splashScreen" class="splash">
+  <div class="logo-container">
+    <img src="assets/logo.png" class="app-logo">
+    <h1>Swayam AI</h1>
+    <p>Smart Learning Assistant</p>
+  </div>
+</div>
 
-  <div class="auth-card">
+<!-- Login Content -->
+<div id="loginContent" style="display:none;">
 
-    <div class="tabs">
-      <button id="loginTab" class="active">Login</button>
-      <button id="registerTab">Register</button>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+
+      <div class="tabs">
+        <button id="loginTab" class="active">Login</button>
+        <button id="registerTab">Register</button>
+      </div>
+
+      <form id="loginForm" class="form active">
+        <input id="loginUser" placeholder="Username" required>
+        <input id="loginPass" type="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
+
+      <form id="registerForm" class="form">
+        <input id="regUser" placeholder="Username" required>
+        <input id="regPass" type="password" placeholder="Password" required>
+        <input id="profilePic" type="file" accept="image/*">
+        <button type="submit">Register</button>
+      </form>
+
     </div>
-
-    <form id="loginForm" class="form active">
-      <input id="loginUser" placeholder="Username" required>
-      <input id="loginPass" type="password" placeholder="Password" required>
-      <button type="submit">Login</button>
-    </form>
-
-    <form id="registerForm" class="form">
-      <input id="regUser" placeholder="Username" required>
-      <input id="regPass" type="password" placeholder="Password" required>
-      <input id="profilePic" type="file" accept="image/*">
-      <button type="submit">Register</button>
-    </form>
-
   </div>
 
 </div>
 
 <script src="auth.js"></script>
+<script src="splash.js"></script>
+
 </body>
 </html>

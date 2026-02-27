@@ -116,15 +116,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const anthemBtn = document.getElementById("anthemBtn");
   const anthemAudio = document.getElementById("anthemAudio");
 
-  if (anthemBtn && anthemAudio) {
-    anthemBtn.addEventListener("click", () => {
-      if (anthemAudio.paused) {
-        anthemAudio.play();
-        anthemBtn.style.background = "#138808";
+  if (bhojpuriBtn && bhojpuriAudio) {
+    bhojpuriBtn.addEventListener("click", () => {
+      if (bhojpuriAudio.paused) {
+        bhojpuriAudio.play();
+        bhojpuriBtn.style.background = "#138808";
       } else {
-        anthemAudio.pause();
-        anthemAudio.currentTime = 0;
-        anthemBtn.style.background = "";
+        bhojpuriAudio.pause();
+        bhojpuriAudio.currentTime = 0;
+        bhojpuriBtn.style.background = "";
       }
     });
   }
