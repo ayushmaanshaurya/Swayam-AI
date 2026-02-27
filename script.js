@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("chats", JSON.stringify(chats));
   }
 
-  // ================= NEW CHAT =================
+  // ================= CREATE NEW CHAT =================
   function createNewChat() {
     currentChatId = Date.now().toString();
     chats[currentChatId] = [];
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveChats();
   }
 
-  // ================= CHAT LIST =================
+  // ================= RENDER CHAT LIST =================
   function renderChatList() {
     chatList.innerHTML = "";
     Object.keys(chats).forEach(id => {
@@ -95,8 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
       block.appendChild(btn);
     });
   }
-
-  // ================= STREAM TEXT =================
   async function streamText(element, text) {
     element.innerHTML = "<strong>AI:</strong><div></div>";
     const div = element.querySelector("div");
@@ -108,11 +106,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (i > text.length) clearInterval(interval);
     }, 10);
   }
-
-  // ================= API CALL (FIXED FOR PRODUCTION) =================
   async function callAPI(endpoint, topic) {
     try {
-      const res = await fetch(endpoint, {   // ✅ NO localhost
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic })
@@ -123,11 +119,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return await res.json();
 
     } catch (error) {
-      return { reply: "Server connection failed. Please try again." };
+      return { reply: "⚠ Server connection failed. Please try again." };
     }
   }
-
-  // ================= HANDLE REQUEST =================
   async function handleRequest(endpoint) {
     const topic = userInput.value.trim();
     if (!topic) return;
@@ -140,13 +134,11 @@ document.addEventListener("DOMContentLoaded", () => {
     chatBox.appendChild(aiMsg);
 
     const data = await callAPI(endpoint, topic);
-    await streamText(aiMsg, data.reply);
+    await streamText(aiMsg, data.reply || "No response");
 
-    chats[currentChatId].push({ content: data.reply, sender: "ai" });
+    chats[currentChatId].push({ content: data.reply || "No response", sender: "ai" });
     saveChats();
   }
-
-  // ================= EVENTS =================
   chatForm.addEventListener("submit", (e) => {
     e.preventDefault();
     handleRequest("/api/explain");
@@ -160,8 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   newChatBtn.addEventListener("click", createNewChat);
-
-  // ================= INIT =================
   if (!currentChatId) createNewChat();
   renderChatList();
 
