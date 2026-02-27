@@ -21,16 +21,16 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(__dirname));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ================= HOMEPAGE =================
+// ================= HOMEPAGE (LOGIN PAGE) =================
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "auth.html"));
 });
 
-// ================= IN-MEMORY USERS =================
+// ================= IN-MEMORY USER STORAGE =================
 const users = {};
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
-// ================= MULTER SETUP =================
+// ================= FILE UPLOAD SETUP =================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -161,8 +161,8 @@ app.post("/api/explain-secure", authenticate, async (req, res) => {
   }
 });
 
-// ================= PRODUCTION PORT =================
-const PORT = process.env.PORT || 3001;
+// ================= PRODUCTION PORT (RENDER) =================
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
