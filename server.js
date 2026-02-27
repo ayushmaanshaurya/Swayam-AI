@@ -13,12 +13,20 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Serve static frontend files
+app.use(express.static(__dirname));
+
+// Serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 const users = {}; 
-const JWT_SECRET = "supersecretkey";
+const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+
+// ================= Multer Setup =================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -29,6 +37,13 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+
+// ================= Root Route =================
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html")); 
+});
+
+// ================= Auth Routes =================
 app.post("/api/register", upload.single("profilePic"), async (req, res) => {
   const { username, password } = req.body;
 
@@ -45,6 +60,7 @@ app.post("/api/register", upload.single("profilePic"), async (req, res) => {
 
   res.json({ message: "Registered successfully" });
 });
+
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -61,6 +77,8 @@ app.post("/api/login", async (req, res) => {
     profilePic: user.profilePic
   });
 });
+
+// ================= Middleware =================
 function authenticate(req, res, next) {
   const header = req.headers.authorization;
   if (!header) return res.status(401).json({ message: "No token" });
@@ -75,6 +93,8 @@ function authenticate(req, res, next) {
     res.status(403).json({ message: "Invalid token" });
   }
 }
+
+// ================= Profile =================
 app.get("/api/profile", authenticate, (req, res) => {
   const user = users[req.user];
 
@@ -83,6 +103,8 @@ app.get("/api/profile", authenticate, (req, res) => {
     profilePic: user.profilePic
   });
 });
+
+// ================= AI Routes =================
 app.post("/api/explain", async (req, res) => {
   try {
     const { topic } = req.body;
@@ -91,9 +113,7 @@ app.post("/api/explain", async (req, res) => {
       "https://api.sarvam.ai/v1/chat/completions",
       {
         model: "sarvam-m",
-        messages: [
-          { role: "user", content: topic }
-        ]
+        messages: [{ role: "user", content: topic }]
       },
       {
         headers: {
@@ -109,11 +129,10 @@ app.post("/api/explain", async (req, res) => {
 
   } catch (error) {
     console.error(error.response?.data || error.message);
-    res.status(500).json({
-      reply: "AI server error"
-    });
+    res.status(500).json({ reply: "AI server error" });
   }
 });
+
 app.post("/api/explain-secure", authenticate, async (req, res) => {
   try {
     const { topic } = req.body;
@@ -122,9 +141,7 @@ app.post("/api/explain-secure", authenticate, async (req, res) => {
       "https://api.sarvam.ai/v1/chat/completions",
       {
         model: "sarvam-m",
-        messages: [
-          { role: "user", content: topic }
-        ]
+        messages: [{ role: "user", content: topic }]
       },
       {
         headers: {
@@ -138,10 +155,14 @@ app.post("/api/explain-secure", authenticate, async (req, res) => {
       reply: response.data.choices[0].message.content
     });
 
-  } catch (error) {
+  } catch {
     res.status(500).json({ reply: "AI error" });
   }
 });
-app.listen(3001, () => {
-  console.log("Server running on port 3001");
+
+// ================= Production Port =================
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
