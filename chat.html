@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>swayam AI</title>
+  <link rel="stylesheet" href="chat.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+<div id="splashScreen" class="splash">
+  <div class="logo-container">
+    <img src="assets/logo.png" class="app-logo">
+    <h1>swayam AI</h1>
+    <p>Smart Learning Assistant</p>
+  </div>
+</div>
+
+<div id="mainApp" class="app-container" style="display:none;">
+
+  <div class="chat-container">
+
+    <div class="chat-header">
+      <div class="logo">AI Tutor</div>
+      <div class="header-actions">
+        <button id="langToggle">EN</button>
+        <button id="micBtn">🎤</button>
+        <button id="anthemBtn">🇮🇳</button>
+        <img id="navProfilePic" class="profile-pic">
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div id="chat-box" class="chat-box"></div>
+
+    <form id="chat-form" class="input-area">
+      <input
+        id="user-input"
+        type="text"
+        placeholder="Ask anything..."
+        autocomplete="off"
+      >
+      <button type="submit">Send</button>
+    </form>
+
+  </div>
+
+</div>
+
+<audio id="anthemAudio" src="audio/Jana Gana Mana (Original)-(Mr-Jat.in).mp3"></audio>
+
+<script src="chat.js"></script>
+
+</body>
+</html>

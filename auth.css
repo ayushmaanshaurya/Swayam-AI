@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+
+  background: linear-gradient(
+    -45deg,
+    #ff9933,
+    #ffffff,
+    #138808,
+    #ffffff
+  );
+  background-size: 400% 400%;
+  animation: tricolorMove 8s ease infinite;
+}
+
+.auth-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-card {
+  width: 350px;
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #eee;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tabs button.active {
+  background: #4f46e5;
+  color: white;
+}
+
+.form {
+  display: none;
+  flex-direction: column;
+}
+
+.form.active {
+  display: flex;
+}
+
+input {
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button[type="submit"] {
+  background: #4f46e5;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background: #3730a3;
+}
+
+@keyframes tricolorMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}

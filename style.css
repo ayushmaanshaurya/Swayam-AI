@@ -1,0 +1,355 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #ff9933, #ffffff, #138808);
+  background-size: 200% 200%;
+  animation: gradientMove 12s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  transition: background 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Rotating Ashoka Chakra */
+body::before {
+  content: "";
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: url("https://upload.wikimedia.org/wikipedia/commons/1/17/Ashoka_Chakra.svg") no-repeat center;
+  background-size: contain;
+  opacity: 0.05;
+  animation: rotateChakra 35s linear infinite;
+  pointer-events: none;
+}
+
+body.dark {
+  background: #0f172a;
+}
+
+body.dark::before {
+  opacity: 0.03;
+}
+
+.app-container {
+  display: flex;
+  width: 950px;
+  height: 650px;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.4s ease-in-out;
+  z-index: 1;
+}
+
+.sidebar {
+  width: 240px;
+  background: #111827;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 16px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-header button {
+  background: #4f46e5;
+  border-radius: 50%;
+  padding: 5px 10px;
+  font-size: 16px;
+}
+
+.chat-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-item {
+  padding: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.2s ease;
+}
+
+.chat-item:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  transition: background 0.3s ease;
+}
+
+body.dark .chat-container {
+  background: #1e293b;
+  color: white;
+}
+
+.chat-header {
+  background: #4f46e5;
+  color: white;
+  padding: 18px;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-header button {
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.chat-box {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+}
+
+body.dark .chat-box {
+  background: #0f172a;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 16px;
+  max-width: 85%;
+  line-height: 1.5;
+  font-size: 14px;
+  animation: slideUp 0.2s ease;
+  word-wrap: break-word;
+  position: relative;
+}
+
+.user {
+  background: #4f46e5;
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.ai {
+  background: #e2e8f0;
+  color: #1e293b;
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+body.dark .ai {
+  background: #334155;
+  color: white;
+}
+
+.message strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.message pre {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+  position: relative;
+}
+
+.message code {
+  background: #cbd5e1;
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+body.dark .message code {
+  background: #475569;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: #3730a3;
+}
+
+.input-area {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+body.dark .input-area {
+  background: #1e293b;
+}
+
+input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 25px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+body.dark input {
+  background: #0f172a;
+  color: white;
+  border: 1px solid #334155;
+}
+
+input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 5px rgba(79, 70, 229, 0.4);
+}
+
+button {
+  margin-left: 8px;
+  padding: 10px 16px;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  background: #4f46e5;
+  color: white;
+  transition: 0.3s ease;
+}
+
+button:hover {
+  background: #3730a3;
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+}
+
+body.dark .actions {
+  background: #1e293b;
+}
+
+.actions button {
+  flex: 1;
+  margin: 0 4px;
+  font-size: 13px;
+}
+
+.typing-indicator span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #4f46e5;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: blink 1.4s infinite both;
+}
+
+@keyframes blink {
+  0% { opacity: .2; }
+  20% { opacity: 1; }
+  100% { opacity: .2; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rotateChakra {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@media (max-width: 900px) {
+  .app-container {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .sidebar {
+    display: none;
+  }
+}
+#langToggle {
+  background: #0ea5e9;
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+#langToggle:hover {
+  background: #0284c7;
+}
+
+#micBtn {
+  background: #f59e0b;
+  margin-left: 6px;
+}
+
+#micBtn.recording {
+  background: red;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
