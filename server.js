@@ -17,16 +17,20 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve static frontend files
+// ================= STATIC FILES =================
 app.use(express.static(__dirname));
-
-// Serve uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-const users = {}; 
+// ================= HOMEPAGE =================
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "auth.html"));
+});
+
+// ================= IN-MEMORY USERS =================
+const users = {};
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 
-// ================= Multer Setup =================
+// ================= MULTER SETUP =================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -38,12 +42,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// ================= Root Route =================
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html")); 
-});
-
-// ================= Auth Routes =================
+// ================= REGISTER =================
 app.post("/api/register", upload.single("profilePic"), async (req, res) => {
   const { username, password } = req.body;
 
@@ -61,6 +60,7 @@ app.post("/api/register", upload.single("profilePic"), async (req, res) => {
   res.json({ message: "Registered successfully" });
 });
 
+// ================= LOGIN =================
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -78,7 +78,7 @@ app.post("/api/login", async (req, res) => {
   });
 });
 
-// ================= Middleware =================
+// ================= AUTH MIDDLEWARE =================
 function authenticate(req, res, next) {
   const header = req.headers.authorization;
   if (!header) return res.status(401).json({ message: "No token" });
@@ -94,7 +94,7 @@ function authenticate(req, res, next) {
   }
 }
 
-// ================= Profile =================
+// ================= PROFILE =================
 app.get("/api/profile", authenticate, (req, res) => {
   const user = users[req.user];
 
@@ -104,7 +104,7 @@ app.get("/api/profile", authenticate, (req, res) => {
   });
 });
 
-// ================= AI Routes =================
+// ================= AI EXPLAIN =================
 app.post("/api/explain", async (req, res) => {
   try {
     const { topic } = req.body;
@@ -133,6 +133,7 @@ app.post("/api/explain", async (req, res) => {
   }
 });
 
+// ================= AI SECURE =================
 app.post("/api/explain-secure", authenticate, async (req, res) => {
   try {
     const { topic } = req.body;
@@ -160,7 +161,7 @@ app.post("/api/explain-secure", authenticate, async (req, res) => {
   }
 });
 
-// ================= Production Port =================
+// ================= PRODUCTION PORT =================
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
