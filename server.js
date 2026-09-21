@@ -16,21 +16,13 @@ app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// ================= STATIC FILES =================
 app.use(express.static(__dirname));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// ================= HOMEPAGE (LOGIN PAGE) =================
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "auth.html"));
 });
-
-// ================= IN-MEMORY USER STORAGE =================
 const users = {};
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
-
-// ================= FILE UPLOAD SETUP =================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -41,8 +33,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-
-// ================= REGISTER =================
 app.post("/api/register", upload.single("profilePic"), async (req, res) => {
   const { username, password } = req.body;
 
@@ -59,8 +49,6 @@ app.post("/api/register", upload.single("profilePic"), async (req, res) => {
 
   res.json({ message: "Registered successfully" });
 });
-
-// ================= LOGIN =================
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -77,8 +65,6 @@ app.post("/api/login", async (req, res) => {
     profilePic: user.profilePic
   });
 });
-
-// ================= AUTH MIDDLEWARE =================
 function authenticate(req, res, next) {
   const header = req.headers.authorization;
   if (!header) return res.status(401).json({ message: "No token" });
@@ -93,8 +79,6 @@ function authenticate(req, res, next) {
     res.status(403).json({ message: "Invalid token" });
   }
 }
-
-// ================= PROFILE =================
 app.get("/api/profile", authenticate, (req, res) => {
   const user = users[req.user];
 
@@ -104,24 +88,28 @@ app.get("/api/profile", authenticate, (req, res) => {
   });
 });
 
-// ================= AI EXPLAIN =================
 app.post("/api/explain", async (req, res) => {
   try {
-    const { topic } = req.body;
+    const reply = await getSarvamReply(req.body?.topic);
+    res.json({ reply });
+  } catch (error) {
+    const status =
+      error.status || error.response?.status || 500;
 
-    const response = await axios.post(
-      "https://api.sarvam.ai/v1/chat/completions",
-      {
-        model: "sarvam-m",
-        messages: [{ role: "user", content: topic }]
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.SARVAM_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
+    console.error(
+      "Sarvam API error:",
+      status,
+      error.response?.data || error.message
     );
+
+    res.status(status).json({
+      reply:
+        status === 400
+          ? error.message
+          : "AI server error"
+    });
+  }
+});
 
     res.json({
       reply: response.data.choices[0].message.content
@@ -133,25 +121,32 @@ app.post("/api/explain", async (req, res) => {
   }
 });
 
-// ================= AI SECURE =================
-app.post("/api/explain-secure", authenticate, async (req, res) => {
-  try {
-    const { topic } = req.body;
+app.post(
+  "/api/explain-secure",
+  authenticate,
+  async (req, res) => {
+    try {
+      const reply = await getSarvamReply(req.body?.topic);
+      res.json({ reply });
+    } catch (error) {
+      const status =
+        error.status || error.response?.status || 500;
 
-    const response = await axios.post(
-      "https://api.sarvam.ai/v1/chat/completions",
-      {
-        model: "sarvam-m",
-        messages: [{ role: "user", content: topic }]
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.SARVAM_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
+      console.error(
+        "Sarvam secure API error:",
+        status,
+        error.response?.data || error.message
+      );
 
+      res.status(status).json({
+        reply:
+          status === 400
+            ? error.message
+            : "AI error"
+      });
+    }
+  }
+);
     res.json({
       reply: response.data.choices[0].message.content
     });
@@ -160,8 +155,6 @@ app.post("/api/explain-secure", authenticate, async (req, res) => {
     res.status(500).json({ reply: "AI error" });
   }
 });
-
-// ================= PRODUCTION PORT (RENDER) =================
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
