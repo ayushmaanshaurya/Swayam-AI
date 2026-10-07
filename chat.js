@@ -1,18 +1,14 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-  // =====================================================
-  // AUTH CHECK
-  // =====================================================
-
-  const token =
-    localStorage.getItem("token");
-
-  if (!token) {
-    window.location.href =
-      "index.html";
+  try {
+    const sessionRes = await fetch("/api/session", { credentials: "same-origin" });
+    if (!sessionRes.ok) { window.location.href = "/index.html"; return; }
+    window.currentUser = (await sessionRes.json()).user || null;
+  } catch (error) {
+    console.error("SESSION CHECK ERROR:", error);
+    window.location.href = "/index.html";
     return;
   }
-
 
   // =====================================================
   // SPLASH SCREEN
@@ -53,25 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // PROFILE PICTURE
   // =====================================================
 
-  const profilePic =
-    localStorage.getItem(
-      "profilePic"
-    );
-
-  const navProfilePic =
-    document.getElementById(
-      "navProfilePic"
-    );
-
-  if (
-    profilePic &&
-    navProfilePic
-  ) {
-
-    navProfilePic.src =
-      "/uploads/" +
-      profilePic;
-  }
+  const navProfilePic = document.getElementById("navProfilePic");
+  if (window.currentUser?.avatarUrl && navProfilePic) navProfilePic.src = window.currentUser.avatarUrl;
 
 
   // =====================================================
@@ -84,16 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
       "click",
       () => {
 
-        localStorage.removeItem(
-          "token"
-        );
-
-        localStorage.removeItem(
-          "profilePic"
-        );
-
-        window.location.href =
-          "index.html";
+        await fetch("/api/logout", { method: "POST", credentials: "same-origin" });
+        localStorage.removeItem("learningTwin");
+        window.location.href = "/index.html";
       }
     );
 
@@ -528,14 +500,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              "Bearer " +
-              token
-          },
+          headers: { "Content-Type": "application/json" },
 
           body:
             JSON.stringify({
@@ -582,14 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              "Bearer " +
-              token
-          },
+          headers: { "Content-Type": "application/json" },
 
           body:
             JSON.stringify({
@@ -987,10 +945,7 @@ document.addEventListener("DOMContentLoaded", () => {
             method: "GET",
 
             headers: {
-              "Authorization":
-                "Bearer " +
-                token
-            }
+              }
           }
         );
 
@@ -1303,14 +1258,7 @@ document.addEventListener("DOMContentLoaded", () => {
               {
                 method: "POST",
 
-                headers: {
-                  "Content-Type":
-                    "application/json",
-
-                  "Authorization":
-                    "Bearer " +
-                    token
-                },
+                headers: { "Content-Type": "application/json" },
 
                 body:
                   JSON.stringify({
