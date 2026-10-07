@@ -618,6 +618,61 @@ button:hover {
 
 
 /* =====================================================
+   MIRROR LEARNING ANALYSIS TABLE
+   ===================================================== */
+
+.mirror-analysis-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+}
+
+.mirror-analysis-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.mirror-analysis-table caption {
+  caption-side: top;
+  text-align: left;
+  padding: 14px 18px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  background: #fff;
+}
+
+.mirror-analysis-table th,
+.mirror-analysis-table td {
+  border-top: 1px solid #e2e2e2;
+  padding: 11px 14px;
+  vertical-align: top;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.mirror-analysis-table th {
+  width: 30%;
+  text-align: left;
+  background: #f5f5f5;
+  color: #222;
+  font-weight: 700;
+}
+
+.mirror-analysis-table td {
+  color: #333;
+  background: #fff;
+}
+
+.mirror-analysis-table tr:last-child th,
+.mirror-analysis-table tr:last-child td {
+  border-bottom: 1px solid #e2e2e2;
+}
+
+
+/* =====================================================
    MIRROR SUMMARY
    ===================================================== */
 
