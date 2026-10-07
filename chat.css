@@ -622,13 +622,24 @@ button:hover {
    ===================================================== */
 
 .mirror-analysis-table-wrap {
+  display: block !important;
   width: 100%;
+  min-height: 260px;
   overflow-x: auto;
   background: #fff;
+  visibility: visible !important;
 }
 
 .mirror-analysis-table {
-  width: 100%;
+  display: table !important;
+  visibility: visible !important;
+  width: 100% !important;
+  min-width: 520px;
+}
+
+/* Table layout and visibility */
+
+.mirror-analysis-table {
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 13px;
