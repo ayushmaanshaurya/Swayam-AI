@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .getElementById("logoutBtn")
     ?.addEventListener(
       "click",
-      () => {
+      async () => {
 
         await fetch("/api/logout", { method: "POST", credentials: "same-origin" });
         localStorage.removeItem("learningTwin");
@@ -69,6 +69,120 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     );
 
+
+  // =====================================================
+  // LEARNING TWIN DASHBOARD
+  // =====================================================
+
+  const dashboard = document.getElementById("learningDashboard");
+  const dashboardClose = document.getElementById("closeLearningDashboard");
+  const profileButton = document.getElementById("navProfilePic");
+
+  function openLearningDashboard() {
+    if (!dashboard) return;
+
+    const twin = getLearningTwin();
+    const topics = Object.entries(twin.topics || {});
+    const history = Array.isArray(twin.history) ? twin.history : [];
+
+    const topicCount = document.getElementById("dashboardTopics");
+    const masteryEl = document.getElementById("dashboardMastery");
+    const analysesEl = document.getElementById("dashboardAnalyses");
+    const streakEl = document.getElementById("dashboardStreak");
+    const topicsList = document.getElementById("dashboardTopicsList");
+    const recentList = document.getElementById("dashboardRecent");
+    const userEl = document.getElementById("learningDashboardUser");
+
+    if (userEl) {
+      userEl.textContent =
+        window.currentUser?.email ||
+        window.currentUser?.username ||
+        "Your learning snapshot";
+    }
+
+    const scores = topics
+      .map(([, item]) => Number(item?.mastery_score))
+      .filter(Number.isFinite);
+
+    const average = scores.length
+      ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+      : null;
+
+    const uniqueDays = new Set(
+      history
+        .map(item => item?.timestamp)
+        .filter(Boolean)
+        .map(timestamp => new Date(timestamp).toISOString().slice(0, 10))
+    );
+
+    if (topicCount) topicCount.textContent = String(topics.length);
+    if (masteryEl) masteryEl.textContent = average === null ? "—" : average + "%";
+    if (analysesEl) analysesEl.textContent = String(history.length);
+    if (streakEl) streakEl.textContent = String(uniqueDays.size);
+
+    if (topicsList) {
+      if (!topics.length) {
+        topicsList.innerHTML = '<div class="learning-empty">Use 🪞 Mirror to start building your Learning Twin.</div>';
+      } else {
+        topics.sort((a, b) => (Number(b[1]?.mastery_score) || 0) - (Number(a[1]?.mastery_score) || 0));
+        topicsList.innerHTML = topics.slice(0, 8).map(([topic, item]) => {
+          const score = Math.max(0, Math.min(100, Number(item?.mastery_score) || 0));
+          return `
+            <div class="learning-topic-row">
+              <div class="learning-topic-main">
+                <span class="learning-topic-name">${escapeHtml(topic)}</span>
+                <span class="learning-topic-score">${score}%</span>
+              </div>
+              <div class="learning-progress"><span style="width:${score}%"></span></div>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    if (recentList) {
+      const recent = [...history].reverse().slice(0, 5);
+      if (!recent.length) {
+        recentList.innerHTML = '<div class="learning-empty">No Mirror analyses yet.</div>';
+      } else {
+        recentList.innerHTML = recent.map(item => {
+          const date = item.timestamp
+            ? new Date(item.timestamp).toLocaleDateString(undefined, { day: "numeric", month: "short" })
+            : "";
+          const score = Number(item.mastery_score) || 0;
+          return `
+            <div class="learning-recent-row">
+              <div>
+                <strong>${escapeHtml(item.topic || "General")}</strong>
+                <span>${date}</span>
+              </div>
+              <b>${score}%</b>
+            </div>
+          `;
+        }).join("");
+      }
+    }
+
+    dashboard.hidden = false;
+    document.body.classList.add("dashboard-open");
+    dashboardClose?.focus();
+  }
+
+  function closeLearningDashboard() {
+    if (!dashboard) return;
+    dashboard.hidden = true;
+    document.body.classList.remove("dashboard-open");
+  }
+
+  profileButton?.addEventListener("click", openLearningDashboard);
+  dashboardClose?.addEventListener("click", closeLearningDashboard);
+  dashboard?.querySelector("[data-close-dashboard]")?.addEventListener("click", closeLearningDashboard);
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && dashboard && !dashboard.hidden) {
+      closeLearningDashboard();
+    }
+  });
 
   // =====================================================
   // CHAT ELEMENTS
