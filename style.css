@@ -1,55 +1,47 @@
+/* ========================================
+   GLOBAL
+======================================== */
+
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #ff9933, #ffffff, #138808);
-  background-size: 200% 200%;
-  animation: gradientMove 12s ease infinite;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f5f5f5;
+  color: #111;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  transition: background 0.3s ease;
-  position: relative;
   overflow: hidden;
+  position: relative;
 }
 
-/* Rotating Ashoka Chakra */
-body::before {
-  content: "";
-  position: fixed;
-  width: 500px;
-  height: 500px;
-  background: url("https://upload.wikimedia.org/wikipedia/commons/1/17/Ashoka_Chakra.svg") no-repeat center;
-  background-size: contain;
-  opacity: 0.05;
-  animation: rotateChakra 35s linear infinite;
-  pointer-events: none;
-}
 
-body.dark {
-  background: #0f172a;
-}
-
-body.dark::before {
-  opacity: 0.03;
-}
+/* ========================================
+   APP CONTAINER
+======================================== */
 
 .app-container {
   display: flex;
   width: 950px;
   height: 650px;
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  border: 1px solid #ddd;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
   animation: fadeIn 0.4s ease-in-out;
   z-index: 1;
 }
 
+
+/* ========================================
+   SIDEBAR
+======================================== */
+
 .sidebar {
   width: 240px;
-  background: #111827;
-  color: white;
+  background: #000;
+  color: #fff;
   display: flex;
   flex-direction: column;
 }
@@ -61,14 +53,20 @@ body.dark::before {
   justify-content: space-between;
   align-items: center;
   font-size: 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid #333;
 }
 
 .sidebar-header button {
-  background: #4f46e5;
+  background: #fff;
+  color: #000;
+  border: none;
   border-radius: 50%;
   padding: 5px 10px;
   font-size: 16px;
+}
+
+.sidebar-header button:hover {
+  background: #ddd;
 }
 
 .chat-list {
@@ -79,30 +77,34 @@ body.dark::before {
 .chat-item {
   padding: 12px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid #222;
   transition: background 0.2s ease;
 }
 
 .chat-item:hover {
-  background: rgba(255,255,255,0.1);
+  background: #222;
 }
+
+
+/* ========================================
+   CHAT CONTAINER
+======================================== */
 
 .chat-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  transition: background 0.3s ease;
+  background: #fff;
 }
 
-body.dark .chat-container {
-  background: #1e293b;
-  color: white;
-}
+
+/* ========================================
+   HEADER
+======================================== */
 
 .chat-header {
-  background: #4f46e5;
-  color: white;
+  background: #000;
+  color: #fff;
   padding: 18px;
   font-size: 18px;
   font-weight: 600;
@@ -113,24 +115,36 @@ body.dark .chat-container {
 
 .chat-header button {
   background: transparent;
+  color: #fff;
+  border: none;
   font-size: 18px;
   cursor: pointer;
 }
+
+.chat-header button:hover {
+  background: #222;
+}
+
+
+/* ========================================
+   CHAT BOX
+======================================== */
 
 .chat-box {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
-  background: #f8fafc;
+  background: #f7f7f7;
   display: flex;
   flex-direction: column;
   gap: 10px;
   scroll-behavior: smooth;
 }
 
-body.dark .chat-box {
-  background: #0f172a;
-}
+
+/* ========================================
+   MESSAGES
+======================================== */
 
 .message {
   padding: 12px 16px;
@@ -143,35 +157,45 @@ body.dark .chat-box {
   position: relative;
 }
 
+
+/* USER MESSAGE */
+
 .user {
-  background: #4f46e5;
-  color: white;
+  background: #000;
+  color: #fff;
   align-self: flex-end;
   border-bottom-right-radius: 4px;
 }
 
+
+/* AI MESSAGE */
+
 .ai {
-  background: #e2e8f0;
-  color: #1e293b;
+  background: #fff;
+  color: #111;
   align-self: flex-start;
+  border: 1px solid #ddd;
   border-bottom-left-radius: 4px;
 }
 
-body.dark .ai {
-  background: #334155;
-  color: white;
-}
+
+/* MESSAGE LABEL */
 
 .message strong {
   display: block;
   margin-bottom: 4px;
   font-size: 13px;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
+
+/* ========================================
+   CODE BLOCKS
+======================================== */
+
 .message pre {
-  background: #1e293b;
-  color: #f8fafc;
+  background: #111;
+  color: #fff;
   padding: 12px;
   border-radius: 8px;
   overflow-x: auto;
@@ -180,23 +204,25 @@ body.dark .ai {
 }
 
 .message code {
-  background: #cbd5e1;
+  background: #e5e5e5;
+  color: #111;
   padding: 3px 6px;
   border-radius: 5px;
   font-size: 13px;
 }
 
-body.dark .message code {
-  background: #475569;
-}
+
+/* ========================================
+   COPY BUTTON
+======================================== */
 
 .copy-btn {
   position: absolute;
   top: 6px;
   right: 6px;
-  background: #4f46e5;
-  color: white;
-  border: none;
+  background: #fff;
+  color: #000;
+  border: 1px solid #aaa;
   padding: 3px 8px;
   font-size: 11px;
   border-radius: 6px;
@@ -204,55 +230,61 @@ body.dark .message code {
 }
 
 .copy-btn:hover {
-  background: #3730a3;
+  background: #ddd;
 }
+
+
+/* ========================================
+   INPUT AREA
+======================================== */
 
 .input-area {
   display: flex;
   padding: 12px;
-  border-top: 1px solid #e2e8f0;
-  background: #ffffff;
-}
-
-body.dark .input-area {
-  background: #1e293b;
+  border-top: 1px solid #ddd;
+  background: #fff;
 }
 
 input {
   flex: 1;
-  padding: 12px;
+  padding: 12px 16px;
   border-radius: 25px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #bbb;
   outline: none;
   font-size: 14px;
+  background: #fff;
+  color: #111;
   transition: 0.2s;
 }
 
-body.dark input {
-  background: #0f172a;
-  color: white;
-  border: 1px solid #334155;
+input::placeholder {
+  color: #777;
 }
 
 input:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 5px rgba(79, 70, 229, 0.4);
+  border-color: #000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
 }
+
+
+/* ========================================
+   ALL BUTTONS
+======================================== */
 
 button {
   margin-left: 8px;
   padding: 10px 16px;
   border-radius: 25px;
-  border: none;
+  border: 1px solid #000;
   cursor: pointer;
   font-size: 14px;
-  background: #4f46e5;
-  color: white;
-  transition: 0.3s ease;
+  background: #000;
+  color: #fff;
+  transition: 0.2s ease;
 }
 
 button:hover {
-  background: #3730a3;
+  background: #333;
   transform: translateY(-1px);
 }
 
@@ -262,16 +294,17 @@ button:disabled {
   transform: none;
 }
 
+
+/* ========================================
+   ACTION BUTTONS
+======================================== */
+
 .actions {
   display: flex;
   justify-content: space-between;
   padding: 12px;
-  background: #ffffff;
-  border-top: 1px solid #e2e8f0;
-}
-
-body.dark .actions {
-  background: #1e293b;
+  background: #fff;
+  border-top: 1px solid #ddd;
 }
 
 .actions button {
@@ -280,42 +313,145 @@ body.dark .actions {
   font-size: 13px;
 }
 
+
+/* ========================================
+   LANGUAGE BUTTON
+======================================== */
+
+#langToggle {
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+#langToggle:hover {
+  background: #ddd;
+}
+
+
+/* ========================================
+   MICROPHONE
+======================================== */
+
+#micBtn {
+  background: #fff;
+  color: #000;
+  border: 1px solid #000;
+  margin-left: 6px;
+}
+
+#micBtn:hover {
+  background: #e5e5e5;
+}
+
+#micBtn.recording {
+  background: #000;
+  color: #fff;
+  animation: pulse 1s infinite;
+}
+
+
+/* ========================================
+   TYPING INDICATOR
+======================================== */
+
 .typing-indicator span {
   display: inline-block;
   width: 6px;
   height: 6px;
-  background: #4f46e5;
+  background: #000;
   border-radius: 50%;
   margin-right: 4px;
   animation: blink 1.4s infinite both;
 }
 
+
+/* ========================================
+   SCROLLBAR
+======================================== */
+
+.chat-box::-webkit-scrollbar,
+.chat-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-box::-webkit-scrollbar-track,
+.chat-list::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.chat-box::-webkit-scrollbar-thumb,
+.chat-list::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 4px;
+}
+
+.chat-box::-webkit-scrollbar-thumb:hover,
+.chat-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+/* ========================================
+   ANIMATIONS
+======================================== */
+
 @keyframes blink {
-  0% { opacity: .2; }
-  20% { opacity: 1; }
-  100% { opacity: .2; }
+  0% {
+    opacity: 0.2;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.2;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-@keyframes rotateChakra {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
 
 @media (max-width: 900px) {
   .app-container {
@@ -328,28 +464,25 @@ body.dark .actions {
     display: none;
   }
 }
-#langToggle {
-  background: #0ea5e9;
-  font-size: 12px;
-  padding: 6px 10px;
-}
 
-#langToggle:hover {
-  background: #0284c7;
-}
+@media (max-width: 600px) {
+  .message {
+    max-width: 90%;
+  }
 
-#micBtn {
-  background: #f59e0b;
-  margin-left: 6px;
-}
+  .chat-box {
+    padding: 12px;
+  }
 
-#micBtn.recording {
-  background: red;
-  animation: pulse 1s infinite;
-}
+  .input-area {
+    padding: 8px;
+  }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  input {
+    padding: 10px 14px;
+  }
+
+  button {
+    padding: 8px 12px;
+  }
 }
