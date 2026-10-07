@@ -147,6 +147,45 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentLang =
     "en-IN";
 
+  // =====================================================
+  // CODING AGENT MODE
+  // =====================================================
+
+  let codingMode = false;
+
+  const codingModeBtn =
+    document.getElementById("codingModeBtn");
+
+  function updateCodingModeUI() {
+    if (!codingModeBtn) return;
+
+    codingModeBtn.textContent =
+      codingMode ? "💻 Coding ON" : "💻 Coding";
+
+    codingModeBtn.classList.toggle(
+      "active",
+      codingMode
+    );
+
+    userInput.placeholder = codingMode
+      ? "Describe your coding problem or paste your code..."
+      : "Ask anything...";
+  }
+
+  codingModeBtn?.addEventListener("click", () => {
+    codingMode = !codingMode;
+    updateCodingModeUI();
+
+    if (codingMode) {
+      addMessage(
+        "💻 **Coding Agent mode is ON.**\n\nAsk me to write code, explain code, find bugs, fix errors, optimize code, or convert code between languages.",
+        "AI"
+      );
+    }
+  });
+
+  updateCodingModeUI();
+
   function speakText(text) {
 
     if (
@@ -186,6 +225,35 @@ document.addEventListener("DOMContentLoaded", () => {
       text || "";
 
     return div.innerHTML;
+  }
+
+  // =====================================================
+  // CODING AGENT REQUEST
+  // =====================================================
+
+  async function askCodingAgent(query) {
+    const res = await fetch("/api/coding", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        message: query
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data.error ||
+        data.reply ||
+        "Coding agent request failed"
+      );
+    }
+
+    return data.reply;
   }
 
   // =====================================================
@@ -421,47 +489,56 @@ document.addEventListener("DOMContentLoaded", () => {
         // SARVAM AI
         // ==============================================
 
-        const res =
-          await fetch(
-            "/api/explain-secure",
-            {
-              method: "POST",
+        let reply;
 
-              headers: {
-                "Content-Type":
-                  "application/json",
+        // ==============================================
+        // CODING AGENT OR NORMAL AI
+        // ==============================================
 
-                "Authorization":
-                  "Bearer " +
-                  token
-              },
+        if (codingMode) {
+          reply = await askCodingAgent(message);
+        } else {
+          const res =
+            await fetch(
+              "/api/explain-secure",
+              {
+                method: "POST",
 
-              body:
-                JSON.stringify({
-                  topic: message
-                })
-            }
-          );
+                headers: {
+                  "Content-Type":
+                    "application/json",
 
-        const data =
-          await res.json();
+                  "Authorization":
+                    "Bearer " +
+                    token
+                },
 
-        if (!res.ok) {
+                body:
+                  JSON.stringify({
+                    topic: message
+                  })
+              }
+            );
 
-          throw new Error(
-            data.error ||
+          const data =
+            await res.json();
+
+          if (!res.ok) {
+            throw new Error(
+              data.error ||
+              data.reply ||
+              "AI request failed"
+            );
+          }
+
+          reply =
             data.reply ||
-            "AI request failed"
-          );
+            "I couldn't generate a response.";
         }
 
         // ==============================================
         // SHOW AI RESPONSE
         // ==============================================
-
-        const reply =
-          data.reply ||
-          "I couldn't generate a response.";
 
         addMessage(
           reply,
@@ -477,14 +554,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // ==============================================
 
         if (
-          wantsVideoSearch(
-            message
-          )
+          !codingMode &&
+          wantsVideoSearch(message)
         ) {
-
-          await searchVideos(
-            message
-          );
+          await searchVideos(message);
         }
 
       } catch (error) {
