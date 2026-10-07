@@ -2,8 +2,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import axios from "axios";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -12,36 +10,178 @@ dotenv.config();
 
 const app = express();
 
-// =====================================================
-// MIDDLEWARE
-// =====================================================
-
 app.use(cors());
 app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(express.static(__dirname));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://nixoyntozysvmdcxwrnt.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "";
 
-// =====================================================
-// HOME PAGE
-// =====================================================
+function parseCookies(req) {
+  const header = req.headers.cookie || "";
+  const result = {};
+  for (const piece of header.split(";")) {
+    const part = piece.trim();
+    const index = part.indexOf("=");
+    if (index > 0) result[decodeURIComponent(part.slice(0, index))] = decodeURIComponent(part.slice(index + 1));
+  }
+  return result;
+}
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "auth.html"));
+function cookie(name, value, maxAge) {
+  return name + "=" + encodeURIComponent(value) + "; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=" + maxAge;
+}
+
+function setSessionCookies(res, session) {
+  res.setHeader("Set-Cookie", [
+    cookie("sb-access-token", session.access_token, Number(session.expires_in) || 3600),
+    cookie("sb-refresh-token", session.refresh_token, 60 * 60 * 24 * 30),
+  ]);
+}
+
+function clearSessionCookies(res) {
+  res.setHeader("Set-Cookie", [
+    cookie("sb-access-token", "", 0),
+    cookie("sb-refresh-token", "", 0),
+  ]);
+}
+
+async function authPost(pathname, body) {
+  return axios.post(SUPABASE_URL + "/auth/v1/" + pathname, body, {
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
+    timeout: 10000,
+    validateStatus: () => true,
+  });
+}
+
+async function verifyAccessToken(accessToken) {
+  if (!accessToken) return null;
+  const response = await axios.get(SUPABASE_URL + "/auth/v1/user", {
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + accessToken },
+    timeout: 10000,
+    validateStatus: () => true,
+  });
+  return response.status === 200 && response.data?.id ? response.data : null;
+}
+
+async function currentUser(req, res) {
+  const cookies = parseCookies(req);
+  let accessToken = cookies["sb-access-token"];
+  let user = await verifyAccessToken(accessToken);
+  if (!user && cookies["sb-refresh-token"]) {
+    const refreshed = await authPost("token?grant_type=refresh_token", { refresh_token: cookies["sb-refresh-token"] });
+    if (refreshed.status >= 200 && refreshed.status < 300 && refreshed.data?.access_token) {
+      setSessionCookies(res, refreshed.data);
+      accessToken = refreshed.data.access_token;
+      user = await verifyAccessToken(accessToken);
+    }
+  }
+  return user ? { user, accessToken } : null;
+}
+
+async function authenticate(req, res, next) {
+  try {
+    const auth = await currentUser(req, res);
+    if (!auth) return res.status(401).json({ message: "Authentication required" });
+    req.user = auth.user;
+    req.accessToken = auth.accessToken;
+    next();
+  } catch (error) {
+    console.error("AUTH ERROR:", error.message);
+    return res.status(401).json({ message: "Authentication failed" });
+  }
+}
+
+async function protectPage(req, res, next) {
+  try {
+    const auth = await currentUser(req, res);
+    if (!auth) return res.redirect("/index.html");
+    req.user = auth.user;
+    req.accessToken = auth.accessToken;
+    next();
+  } catch (error) {
+    console.error("PAGE AUTH ERROR:", error.message);
+    return res.redirect("/index.html");
+  }
+}
+
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
+
+app.get("/chat.html", protectPage, (req, res) => {
+  res.sendFile(path.join(__dirname, "chat.html"));
 });
 
+app.get("/api/session", authenticate, (req, res) => {
+  res.json({ user: {
+    id: req.user.id,
+    email: req.user.email || null,
+    username: req.user.user_metadata?.username || null,
+    avatarUrl: req.user.user_metadata?.avatar_url || null,
+  }});
+});
+
+app.post("/api/register", async (req, res) => {
+  try {
+    const username = String(req.body?.username || "").trim();
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const password = String(req.body?.password || "");
+    if (!username || !email || !password) return res.status(400).json({ message: "Username, email and password are required" });
+    const response = await authPost("signup", { email, password, data: { username } });
+    if (response.status < 200 || response.status >= 300) {
+      return res.status(response.status || 400).json({ message: response.data?.msg || response.data?.error_description || response.data?.message || "Registration failed" });
+    }
+    if (response.data?.access_token && response.data?.refresh_token) setSessionCookies(res, response.data);
+    return res.status(201).json({
+      message: response.data?.access_token ? "Registered and signed in successfully" : "Registered successfully. Check your email to confirm your account.",
+      user: response.data?.user || null,
+    });
+  } catch (error) {
+    console.error("REGISTER ERROR:", error.message);
+    return res.status(500).json({ message: "Registration failed" });
+  }
+});
+
+app.post("/api/login", async (req, res) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const password = String(req.body?.password || "");
+    if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
+    const response = await authPost("token?grant_type=password", { email, password });
+    if (response.status < 200 || response.status >= 300 || !response.data?.access_token) {
+      return res.status(response.status || 401).json({ message: response.data?.msg || response.data?.error_description || response.data?.message || "Invalid email or password" });
+    }
+    setSessionCookies(res, response.data);
+    return res.json({ user: response.data.user || null });
+  } catch (error) {
+    console.error("LOGIN ERROR:", error.message);
+    return res.status(500).json({ message: "Login failed" });
+  }
+});
+
+app.post("/api/logout", async (req, res) => {
+  try {
+    const accessToken = parseCookies(req)["sb-access-token"];
+    if (accessToken) await axios.post(SUPABASE_URL + "/auth/v1/logout", null, { headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: "Bearer " + accessToken }, timeout: 10000, validateStatus: () => true });
+  } catch (error) {
+    console.warn("LOGOUT WARNING:", error.message);
+  }
+  clearSessionCookies(res);
+  res.json({ success: true });
+});
+
+app.use((req, res, next) => {
+  const blocked = new Set(["/server.js", "/package.json", "/package-lock.json", "/.env", "/.env.example"]);
+  if (blocked.has(req.path.toLowerCase())) return res.status(404).end();
+  next();
+});
+
+app.use(express.static(__dirname, { index: false }));
+
 // =====================================================
-// USER STORAGE
+// SUPABASE - LEARNING TWIN PERSISTENCE
 // =====================================================
-
-const users = {};
-
-const JWT_SECRET =
-  process.env.JWT_SECRET || "supersecretkey";
-
 // =====================================================
 // SUPABASE - LEARNING TWIN PERSISTENCE
 // =====================================================
@@ -923,14 +1063,14 @@ app.post(
 
     try {
       console.log("SWAYAM MIRROR REQUEST:", {
-        user: req.user,
+        user: req.user.email || req.user.id,
         topic,
         explanationLength: explanation.length,
       });
 
       // Supabase is the server-side source of truth when available.
       // Browser data is only used as a fallback for first-time users.
-      const storedProfile = await getStoredLearningTwin(req.user);
+      const storedProfile = await getStoredLearningTwin(req.user.id);
       const previousProfile =
         storedProfile && Object.keys(storedProfile).length > 0
           ? storedProfile
