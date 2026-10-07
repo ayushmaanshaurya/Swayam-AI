@@ -728,6 +728,7 @@ async function handleAIRequest(
 // Public endpoint
 app.post(
   "/api/explain",
+  authenticate,
   handleAIRequest
 );
 
