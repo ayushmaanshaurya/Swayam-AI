@@ -117,6 +117,16 @@ document.addEventListener("DOMContentLoaded", () => {
       "chat-box"
     );
 
+  const mirrorTopicArea =
+    document.getElementById(
+      "mirrorTopicArea"
+    );
+
+  const mirrorTopicInput =
+    document.getElementById(
+      "mirrorTopicInput"
+    );
+
 
   // =====================================================
   // ADD MESSAGE
@@ -366,6 +376,10 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
+    if (mirrorTopicArea) {
+      mirrorTopicArea.hidden = !mirrorMode;
+    }
+
     if (userInput) {
 
       userInput.placeholder =
@@ -554,6 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================
 
   async function askMirror(
+    topic,
     explanation
   ) {
 
@@ -579,7 +594,8 @@ document.addEventListener("DOMContentLoaded", () => {
           body:
             JSON.stringify({
 
-              topic: "",
+              topic:
+                topic || "",
 
               explanation:
                 explanation,
@@ -600,6 +616,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       throw new Error(
         data.error ||
+        data.message ||
         "Mirror analysis failed"
       );
     }
@@ -1130,6 +1147,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const message =
         userInput.value.trim();
 
+      const mirrorTopic =
+        mirrorMode && mirrorTopicInput
+          ? mirrorTopicInput.value.trim()
+          : "";
+
 
       if (!message) {
         return;
@@ -1161,6 +1183,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const analysis =
             await askMirror(
+              mirrorTopic,
               message
             );
 
