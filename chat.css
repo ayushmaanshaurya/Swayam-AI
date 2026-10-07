@@ -475,3 +475,443 @@ button:hover {
     padding: 7px 9px;
   }
 }
+/* =====================================================
+   SWAYAM MIRROR
+   ===================================================== */
+
+#mirrorModeBtn {
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+#mirrorModeBtn:hover {
+  background: #e5e5e5;
+}
+
+#mirrorModeBtn.active {
+  background: #fff;
+  color: #000;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #555;
+}
+
+
+/* =====================================================
+   MIRROR RESULT CONTAINER
+   ===================================================== */
+
+.mirror-result {
+  width: 100%;
+  max-width: 720px;
+  align-self: flex-start;
+
+  background: #fff;
+  color: #111;
+
+  border: 1px solid #d8d8d8;
+  border-radius: 14px;
+
+  margin-top: 10px;
+  margin-bottom: 12px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.08);
+
+  animation: mirrorAppear 0.3s ease;
+}
+
+
+@keyframes mirrorAppear {
+
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
+
+
+/* =====================================================
+   MIRROR HEADER
+   ===================================================== */
+
+.mirror-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 18px;
+
+  background: #000;
+  color: #fff;
+}
+
+
+.mirror-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+
+.mirror-topic {
+  margin-top: 5px;
+
+  font-size: 13px;
+
+  color: #cfcfcf;
+
+  word-break: break-word;
+}
+
+
+/* =====================================================
+   MASTERY SCORE
+   ===================================================== */
+
+.mirror-score {
+  min-width: 76px;
+  height: 76px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #fff;
+  border-radius: 50%;
+
+  flex-shrink: 0;
+}
+
+
+.mirror-score-number {
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+
+.mirror-score-label {
+  margin-top: 5px;
+
+  font-size: 10px;
+
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+
+  color: #ccc;
+}
+
+
+/* =====================================================
+   MIRROR SUMMARY
+   ===================================================== */
+
+.mirror-summary {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  padding: 14px 18px;
+
+  background: #f7f7f7;
+
+  border-bottom: 1px solid #e2e2e2;
+}
+
+
+.mirror-stat {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding: 10px 12px;
+
+  background: #fff;
+
+  border: 1px solid #ddd;
+  border-radius: 9px;
+}
+
+
+.mirror-stat span {
+  font-size: 11px;
+
+  color: #777;
+
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+
+.mirror-stat strong {
+  font-size: 14px;
+
+  color: #111;
+
+  text-transform: capitalize;
+}
+
+
+/* =====================================================
+   MIRROR SECTIONS
+   ===================================================== */
+
+.mirror-section {
+  padding: 15px 18px;
+
+  border-bottom: 1px solid #e5e5e5;
+}
+
+
+.mirror-section h4 {
+  margin: 0 0 9px 0;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  color: #111;
+}
+
+
+.mirror-section p {
+  margin: 0;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+
+  color: #333;
+}
+
+
+.mirror-section ul {
+  margin: 0;
+
+  padding-left: 21px;
+}
+
+
+.mirror-section li {
+  margin-bottom: 6px;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+
+  color: #333;
+}
+
+
+.mirror-section li:last-child {
+  margin-bottom: 0;
+}
+
+
+/* =====================================================
+   EMPTY SECTION
+   ===================================================== */
+
+.mirror-empty {
+  font-size: 13px;
+
+  color: #777;
+
+  font-style: italic;
+}
+
+
+/* =====================================================
+   NEXT CHALLENGE
+   ===================================================== */
+
+.mirror-next-question {
+  margin: 16px 18px;
+
+  padding: 15px;
+
+  background: #000;
+
+  color: #fff;
+
+  border-radius: 10px;
+
+  border: 1px solid #000;
+}
+
+
+.mirror-next-label {
+  margin-bottom: 8px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.7px;
+
+  color: #bdbdbd;
+}
+
+
+.mirror-question {
+  font-size: 14px;
+
+  line-height: 1.6;
+
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   CONCEPT TAGS
+   ===================================================== */
+
+.mirror-tags {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  padding: 0 18px 18px;
+}
+
+
+.mirror-tags span {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 5px 9px;
+
+  background: #f1f1f1;
+
+  color: #222;
+
+  border: 1px solid #d7d7d7;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   MIRROR RESPONSIVE DESIGN
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+  .mirror-result {
+    max-width: 100%;
+  }
+
+
+  .mirror-header {
+    padding: 15px;
+
+    gap: 12px;
+  }
+
+
+  .mirror-title {
+    font-size: 16px;
+  }
+
+
+  .mirror-score {
+    width: 64px;
+    min-width: 64px;
+    height: 64px;
+  }
+
+
+  .mirror-score-number {
+    font-size: 19px;
+  }
+
+
+  .mirror-score-label {
+    font-size: 9px;
+  }
+
+
+  .mirror-summary {
+    padding: 12px;
+  }
+
+
+  .mirror-section {
+    padding: 13px;
+  }
+
+
+  .mirror-next-question {
+    margin: 13px;
+  }
+
+
+  .mirror-tags {
+    padding: 0 13px 13px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .mirror-header {
+    align-items: flex-start;
+  }
+
+
+  .mirror-summary {
+    grid-template-columns: 1fr;
+  }
+
+
+  .mirror-score {
+    width: 58px;
+    min-width: 58px;
+    height: 58px;
+  }
+
+
+  .mirror-score-number {
+    font-size: 17px;
+  }
+
+
+  .mirror-title {
+    font-size: 15px;
+  }
+
+
+  .mirror-topic {
+    font-size: 12px;
+  }
+
+}
