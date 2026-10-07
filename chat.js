@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+
   // =====================================================
   // SPLASH SCREEN
   // =====================================================
@@ -47,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 2500);
   }
 
+
   // =====================================================
   // PROFILE PICTURE
   // =====================================================
@@ -71,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
       profilePic;
   }
 
+
   // =====================================================
   // LOGOUT
   // =====================================================
@@ -94,6 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
 
+
   // =====================================================
   // CHAT ELEMENTS
   // =====================================================
@@ -112,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById(
       "chat-box"
     );
+
 
   // =====================================================
   // ADD MESSAGE
@@ -140,12 +145,14 @@ document.addEventListener("DOMContentLoaded", () => {
       chatBox.scrollHeight;
   }
 
+
   // =====================================================
   // TEXT TO SPEECH
   // =====================================================
 
   let currentLang =
     "en-IN";
+
 
   // =====================================================
   // CODING AGENT MODE
@@ -154,37 +161,300 @@ document.addEventListener("DOMContentLoaded", () => {
   let codingMode = false;
 
   const codingModeBtn =
-    document.getElementById("codingModeBtn");
+    document.getElementById(
+      "codingModeBtn"
+    );
+
+
+  // =====================================================
+  // SWAYAM MIRROR MODE
+  // =====================================================
+
+  let mirrorMode = false;
+
+  const mirrorModeBtn =
+    document.getElementById(
+      "mirrorModeBtn"
+    );
+
+
+  // =====================================================
+  // LEARNING TWIN
+  // =====================================================
+
+  function getLearningTwin() {
+
+    try {
+
+      return JSON.parse(
+        localStorage.getItem(
+          "learningTwin"
+        ) || "{}"
+      );
+
+    } catch (error) {
+
+      console.error(
+        "LEARNING TWIN READ ERROR:",
+        error
+      );
+
+      return {};
+    }
+  }
+
+
+  function saveLearningTwin(
+    analysis
+  ) {
+
+    try {
+
+      const currentTwin =
+        getLearningTwin();
+
+      const topic =
+        analysis.topic ||
+        "General";
+
+
+      if (!currentTwin.topics) {
+        currentTwin.topics = {};
+      }
+
+
+      if (!currentTwin.history) {
+        currentTwin.history = [];
+      }
+
+
+      currentTwin.topics[topic] = {
+
+        mastery_score:
+          analysis.mastery_score ?? 0,
+
+        understanding:
+          analysis.understanding ||
+          "partial",
+
+        strengths:
+          analysis.strengths || [],
+
+        misconceptions:
+          analysis.misconceptions || [],
+
+        missing_points:
+          analysis.missing_points || [],
+
+        confidence:
+          analysis.confidence ||
+          "medium",
+
+        concept_tags:
+          analysis.concept_tags || [],
+
+        updated_at:
+          new Date().toISOString()
+
+      };
+
+
+      currentTwin.history.push({
+
+        topic,
+
+        mastery_score:
+          analysis.mastery_score ?? 0,
+
+        misconceptions:
+          analysis.misconceptions || [],
+
+        missing_points:
+          analysis.missing_points || [],
+
+        timestamp:
+          new Date().toISOString()
+
+      });
+
+
+      // Keep only the latest 50 analyses
+      if (
+        currentTwin.history.length > 50
+      ) {
+
+        currentTwin.history =
+          currentTwin.history.slice(-50);
+      }
+
+
+      localStorage.setItem(
+        "learningTwin",
+        JSON.stringify(
+          currentTwin
+        )
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "LEARNING TWIN SAVE ERROR:",
+        error
+      );
+    }
+  }
+
+
+  // =====================================================
+  // UPDATE CODING MODE UI
+  // =====================================================
 
   function updateCodingModeUI() {
+
     if (!codingModeBtn) return;
 
     codingModeBtn.textContent =
-      codingMode ? "💻 Coding ON" : "💻 Coding";
+      codingMode
+        ? "💻 Coding ON"
+        : "💻 Coding";
 
     codingModeBtn.classList.toggle(
       "active",
       codingMode
     );
 
-    userInput.placeholder = codingMode
-      ? "Describe your coding problem or paste your code..."
-      : "Ask anything...";
+    codingModeBtn.setAttribute(
+      "aria-pressed",
+      String(codingMode)
+    );
+
+
+    if (userInput) {
+
+      userInput.placeholder =
+        codingMode
+          ? "Describe your coding problem or paste your code..."
+          : mirrorMode
+            ? "Explain a concept in your own words..."
+            : "Ask anything...";
+    }
   }
 
-  codingModeBtn?.addEventListener("click", () => {
-    codingMode = !codingMode;
-    updateCodingModeUI();
 
-    if (codingMode) {
-      addMessage(
-        "💻 **Coding Agent mode is ON.**\n\nAsk me to write code, explain code, find bugs, fix errors, optimize code, or convert code between languages.",
-        "AI"
-      );
+  // =====================================================
+  // UPDATE MIRROR MODE UI
+  // =====================================================
+
+  function updateMirrorModeUI() {
+
+    if (!mirrorModeBtn) return;
+
+    mirrorModeBtn.textContent =
+      mirrorMode
+        ? "🪞 Mirror ON"
+        : "🪞 Mirror";
+
+    mirrorModeBtn.classList.toggle(
+      "active",
+      mirrorMode
+    );
+
+    mirrorModeBtn.setAttribute(
+      "aria-pressed",
+      String(mirrorMode)
+    );
+
+
+    if (userInput) {
+
+      userInput.placeholder =
+        mirrorMode
+          ? "Explain a concept in your own words..."
+          : codingMode
+            ? "Describe your coding problem or paste your code..."
+            : "Ask anything...";
     }
-  });
+  }
+
+
+  // =====================================================
+  // CODING BUTTON
+  // =====================================================
+
+  codingModeBtn?.addEventListener(
+    "click",
+    () => {
+
+      codingMode =
+        !codingMode;
+
+
+      // Coding and Mirror are mutually exclusive
+      if (codingMode) {
+        mirrorMode = false;
+      }
+
+
+      updateCodingModeUI();
+      updateMirrorModeUI();
+
+
+      if (codingMode) {
+
+        addMessage(
+          "💻 **Coding Agent mode is ON.**\n\nAsk me to write code, explain code, find bugs, fix errors, optimize code, or convert code between languages.",
+          "AI"
+        );
+
+      }
+
+    }
+  );
+
+
+  // =====================================================
+  // MIRROR BUTTON
+  // =====================================================
+
+  mirrorModeBtn?.addEventListener(
+    "click",
+    () => {
+
+      mirrorMode =
+        !mirrorMode;
+
+
+      // Coding and Mirror are mutually exclusive
+      if (mirrorMode) {
+        codingMode = false;
+      }
+
+
+      updateCodingModeUI();
+      updateMirrorModeUI();
+
+
+      if (mirrorMode) {
+
+        addMessage(
+          "🪞 **Swayam Mirror mode is ON.**\n\nExplain a concept in your own words. I will analyze your understanding, identify misconceptions, find missing concepts, estimate your mastery, and give you a targeted next question.",
+          "AI"
+        );
+
+      }
+
+    }
+  );
+
 
   updateCodingModeUI();
+  updateMirrorModeUI();
+
+
+  // =====================================================
+  // TEXT TO SPEECH
+  // =====================================================
 
   function speakText(text) {
 
@@ -194,6 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
       return;
     }
+
 
     const speech =
       new SpeechSynthesisUtterance(
@@ -209,6 +480,7 @@ document.addEventListener("DOMContentLoaded", () => {
       speech
     );
   }
+
 
   // =====================================================
   // HTML ESCAPE
@@ -227,25 +499,44 @@ document.addEventListener("DOMContentLoaded", () => {
     return div.innerHTML;
   }
 
+
   // =====================================================
   // CODING AGENT REQUEST
   // =====================================================
 
-  async function askCodingAgent(query) {
-    const res = await fetch("/api/coding", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + token
-      },
-      body: JSON.stringify({
-        message: query
-      })
-    });
+  async function askCodingAgent(
+    query
+  ) {
 
-    const data = await res.json();
+    const res =
+      await fetch(
+        "/api/coding",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " +
+              token
+          },
+
+          body:
+            JSON.stringify({
+              message: query
+            })
+        }
+      );
+
+
+    const data =
+      await res.json();
+
 
     if (!res.ok) {
+
       throw new Error(
         data.error ||
         data.reply ||
@@ -253,8 +544,357 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
+
     return data.reply;
   }
+
+
+  // =====================================================
+  // SWAYAM MIRROR REQUEST
+  // =====================================================
+
+  async function askMirror(
+    explanation
+  ) {
+
+    const learningTwin =
+      getLearningTwin();
+
+
+    const res =
+      await fetch(
+        "/api/mirror",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " +
+              token
+          },
+
+          body:
+            JSON.stringify({
+
+              topic: "",
+
+              explanation:
+                explanation,
+
+              profile:
+                learningTwin
+
+            })
+        }
+      );
+
+
+    const data =
+      await res.json();
+
+
+    if (!res.ok) {
+
+      throw new Error(
+        data.error ||
+        "Mirror analysis failed"
+      );
+    }
+
+
+    if (!data.analysis) {
+
+      throw new Error(
+        "Mirror returned no analysis"
+      );
+    }
+
+
+    return data.analysis;
+  }
+
+
+  // =====================================================
+  // DISPLAY MIRROR RESULT
+  // =====================================================
+
+  function displayMirrorResult(
+    analysis
+  ) {
+
+    // Save result into Learning Twin
+    saveLearningTwin(
+      analysis
+    );
+
+
+    const container =
+      document.createElement(
+        "div"
+      );
+
+    container.className =
+      "mirror-result";
+
+
+    const score =
+      Number(
+        analysis.mastery_score
+      ) || 0;
+
+
+    const understanding =
+      escapeHtml(
+        analysis.understanding ||
+        "partial"
+      );
+
+
+    const confidence =
+      escapeHtml(
+        analysis.confidence ||
+        "medium"
+      );
+
+
+    const topic =
+      escapeHtml(
+        analysis.topic ||
+        "Concept"
+      );
+
+
+    const feedback =
+      escapeHtml(
+        analysis.feedback ||
+        "Keep practicing and explaining the concept in your own words."
+      );
+
+
+    const nextQuestion =
+      escapeHtml(
+        analysis.next_question ||
+        "Can you explain the most important part of this concept in another way?"
+      );
+
+
+    const strengths =
+      Array.isArray(
+        analysis.strengths
+      )
+        ? analysis.strengths
+        : [];
+
+
+    const misconceptions =
+      Array.isArray(
+        analysis.misconceptions
+      )
+        ? analysis.misconceptions
+        : [];
+
+
+    const missingPoints =
+      Array.isArray(
+        analysis.missing_points
+      )
+        ? analysis.missing_points
+        : [];
+
+
+    const conceptTags =
+      Array.isArray(
+        analysis.concept_tags
+      )
+        ? analysis.concept_tags
+        : [];
+
+
+    function makeList(
+      items,
+      emptyText
+    ) {
+
+      if (!items.length) {
+
+        return `
+          <div class="mirror-empty">
+            ${emptyText}
+          </div>
+        `;
+      }
+
+
+      return `
+        <ul>
+          ${items
+            .map(
+              item =>
+                `<li>${escapeHtml(item)}</li>`
+            )
+            .join("")}
+        </ul>
+      `;
+    }
+
+
+    container.innerHTML = `
+
+      <div class="mirror-header">
+
+        <div>
+          <div class="mirror-title">
+            🪞 Swayam Mirror
+          </div>
+
+          <div class="mirror-topic">
+            ${topic}
+          </div>
+        </div>
+
+        <div class="mirror-score">
+          <div class="mirror-score-number">
+            ${score}
+          </div>
+
+          <div class="mirror-score-label">
+            Mastery
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="mirror-summary">
+
+        <div class="mirror-stat">
+
+          <span>
+            Understanding
+          </span>
+
+          <strong>
+            ${understanding}
+          </strong>
+
+        </div>
+
+
+        <div class="mirror-stat">
+
+          <span>
+            Confidence
+          </span>
+
+          <strong>
+            ${confidence}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="mirror-section">
+
+        <h4>
+          ✅ What you understand
+        </h4>
+
+        ${makeList(
+          strengths,
+          "No specific strengths detected yet."
+        )}
+
+      </div>
+
+
+      <div class="mirror-section">
+
+        <h4>
+          ⚠️ Possible misconceptions
+        </h4>
+
+        ${makeList(
+          misconceptions,
+          "No clear misconceptions detected."
+        )}
+
+      </div>
+
+
+      <div class="mirror-section">
+
+        <h4>
+          📚 Missing points
+        </h4>
+
+        ${makeList(
+          missingPoints,
+          "No important missing points detected."
+        )}
+
+      </div>
+
+
+      <div class="mirror-section">
+
+        <h4>
+          💬 Swayam's feedback
+        </h4>
+
+        <p>
+          ${feedback}
+        </p>
+
+      </div>
+
+
+      <div class="mirror-next-question">
+
+        <div class="mirror-next-label">
+          🎯 Your next challenge
+        </div>
+
+        <div class="mirror-question">
+          ${nextQuestion}
+        </div>
+
+      </div>
+
+
+      ${
+        conceptTags.length
+          ? `
+            <div class="mirror-tags">
+
+              ${conceptTags
+                .map(
+                  tag =>
+                    `<span>${escapeHtml(tag)}</span>`
+                )
+                .join("")}
+
+            </div>
+          `
+          : ""
+      }
+
+    `;
+
+
+    chatBox.appendChild(
+      container
+    );
+
+
+    chatBox.scrollTop =
+      chatBox.scrollHeight;
+  }
+
 
   // =====================================================
   // YOUTUBE VIDEO SEARCH
@@ -280,8 +920,10 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         );
 
+
       const data =
         await res.json();
+
 
       if (
         !res.ok ||
@@ -294,9 +936,11 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       }
 
+
       displayVideos(
         data.videos
       );
+
 
     } catch (error) {
 
@@ -305,12 +949,14 @@ document.addEventListener("DOMContentLoaded", () => {
         error
       );
 
+
       addMessage(
         "I couldn't find videos right now. Please try again.",
         "AI"
       );
     }
   }
+
 
   // =====================================================
   // DISPLAY VIDEOS
@@ -333,6 +979,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+
     const container =
       document.createElement(
         "div"
@@ -340,6 +987,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     container.className =
       "video-results";
+
 
     const heading =
       document.createElement(
@@ -356,6 +1004,7 @@ document.addEventListener("DOMContentLoaded", () => {
       heading
     );
 
+
     videos.forEach(
       (video) => {
 
@@ -367,15 +1016,18 @@ document.addEventListener("DOMContentLoaded", () => {
         card.className =
           "video-card";
 
+
         const safeTitle =
           escapeHtml(
             video.title
           );
 
+
         const safeChannel =
           escapeHtml(
             video.channel
           );
+
 
         card.innerHTML = `
 
@@ -392,6 +1044,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           </div>
 
+
           <div class="video-info">
 
             <div class="video-title">
@@ -405,19 +1058,23 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `;
 
+
         container.appendChild(
           card
         );
       }
     );
 
+
     chatBox.appendChild(
       container
     );
 
+
     chatBox.scrollTop =
       chatBox.scrollHeight;
   }
+
 
   // =====================================================
   // DETECT VIDEO REQUEST
@@ -430,7 +1087,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const text =
       message.toLowerCase();
 
+
     const videoWords = [
+
       "video",
       "videos",
       "watch",
@@ -446,13 +1105,16 @@ document.addEventListener("DOMContentLoaded", () => {
       "trailer",
       "documentary",
       "highlights"
+
     ];
+
 
     return videoWords.some(
       (word) =>
         text.includes(word)
     );
   }
+
 
   // =====================================================
   // CHAT SUBMIT
@@ -464,12 +1126,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       e.preventDefault();
 
+
       const message =
         userInput.value.trim();
+
 
       if (!message) {
         return;
       }
+
 
       // Show user's message
       addMessage(
@@ -477,27 +1142,81 @@ document.addEventListener("DOMContentLoaded", () => {
         "You"
       );
 
+
       userInput.value = "";
+
 
       // Disable input while AI responds
       userInput.disabled =
         true;
 
+
       try {
 
         // ==============================================
-        // SARVAM AI
+        // SWAYAM MIRROR
         // ==============================================
 
-        let reply;
+        if (mirrorMode) {
+
+          const analysis =
+            await askMirror(
+              message
+            );
+
+
+          displayMirrorResult(
+            analysis
+          );
+
+
+          // Speak only the useful feedback/question
+          const speechText =
+            [
+              analysis.feedback,
+              analysis.next_question
+            ]
+              .filter(Boolean)
+              .join(". ");
+
+
+          speakText(
+            speechText
+          );
+
+
+        }
 
         // ==============================================
-        // CODING AGENT OR NORMAL AI
+        // CODING AGENT
         // ==============================================
 
-        if (codingMode) {
-          reply = await askCodingAgent(message);
-        } else {
+        else if (codingMode) {
+
+          const reply =
+            await askCodingAgent(
+              message
+            );
+
+
+          addMessage(
+            reply,
+            "AI"
+          );
+
+
+          speakText(
+            reply
+          );
+
+        }
+
+        // ==============================================
+        // NORMAL SARVAM AI
+        // ==============================================
+
+        else {
+
           const res =
             await fetch(
               "/api/explain-secure",
@@ -520,10 +1239,13 @@ document.addEventListener("DOMContentLoaded", () => {
               }
             );
 
+
           const data =
             await res.json();
 
+
           if (!res.ok) {
+
             throw new Error(
               data.error ||
               data.reply ||
@@ -531,34 +1253,41 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           }
 
-          reply =
+
+          const reply =
             data.reply ||
             "I couldn't generate a response.";
+
+
+          addMessage(
+            reply,
+            "AI"
+          );
+
+
+          speakText(
+            reply
+          );
+
+
+          // ==========================================
+          // SEARCH YOUTUBE WHEN REQUESTED
+          // ==========================================
+
+          if (
+            wantsVideoSearch(
+              message
+            )
+          ) {
+
+            await searchVideos(
+              message
+            );
+
+          }
+
         }
 
-        // ==============================================
-        // SHOW AI RESPONSE
-        // ==============================================
-
-        addMessage(
-          reply,
-          "AI"
-        );
-
-        speakText(
-          reply
-        );
-
-        // ==============================================
-        // SEARCH YOUTUBE WHEN REQUESTED
-        // ==============================================
-
-        if (
-          !codingMode &&
-          wantsVideoSearch(message)
-        ) {
-          await searchVideos(message);
-        }
 
       } catch (error) {
 
@@ -567,10 +1296,13 @@ document.addEventListener("DOMContentLoaded", () => {
           error
         );
 
+
         addMessage(
+          error.message ||
           "Server error. Please try again.",
           "AI"
         );
+
 
       } finally {
 
@@ -578,9 +1310,12 @@ document.addEventListener("DOMContentLoaded", () => {
           false;
 
         userInput.focus();
+
       }
+
     }
   );
+
 
   // =====================================================
   // LANGUAGE TOGGLE
@@ -590,6 +1325,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById(
       "langToggle"
     );
+
 
   if (langToggle) {
 
@@ -602,13 +1338,16 @@ document.addEventListener("DOMContentLoaded", () => {
             ? "hi-IN"
             : "en-IN";
 
+
         langToggle.textContent =
           currentLang === "en-IN"
             ? "EN"
             : "HI";
+
       }
     );
   }
+
 
   // =====================================================
   // MICROPHONE / SPEECH RECOGNITION
@@ -618,6 +1357,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById(
       "micBtn"
     );
+
 
   if (
     micBtn &&
@@ -633,14 +1373,17 @@ document.addEventListener("DOMContentLoaded", () => {
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
 
+
     const recognition =
       new SpeechRecognition();
+
 
     recognition.continuous =
       false;
 
     recognition.interimResults =
       false;
+
 
     micBtn.addEventListener(
       "click",
@@ -651,11 +1394,14 @@ document.addEventListener("DOMContentLoaded", () => {
           recognition.lang =
             currentLang;
 
+
           recognition.start();
+
 
           micBtn.classList.add(
             "recording"
           );
+
 
         } catch (error) {
 
@@ -663,9 +1409,12 @@ document.addEventListener("DOMContentLoaded", () => {
             "Speech recognition error:",
             error
           );
+
         }
+
       }
     );
+
 
     recognition.onresult =
       (event) => {
@@ -675,17 +1424,22 @@ document.addEventListener("DOMContentLoaded", () => {
             .results[0][0]
             .transcript;
 
+
         userInput.value =
           transcript;
+
 
         micBtn.classList.remove(
           "recording"
         );
 
+
         chatForm.dispatchEvent(
           new Event("submit")
         );
+
       };
+
 
     recognition.onerror =
       (event) => {
@@ -695,10 +1449,13 @@ document.addEventListener("DOMContentLoaded", () => {
           event.error
         );
 
+
         micBtn.classList.remove(
           "recording"
         );
+
       };
+
 
     recognition.onend =
       () => {
@@ -706,8 +1463,11 @@ document.addEventListener("DOMContentLoaded", () => {
         micBtn.classList.remove(
           "recording"
         );
+
       };
+
   }
+
 
   // =====================================================
   // ANTHEM / MUSIC BUTTON
@@ -718,10 +1478,12 @@ document.addEventListener("DOMContentLoaded", () => {
       "anthemBtn"
     );
 
+
   const anthemAudio =
     document.getElementById(
       "anthemAudio"
     );
+
 
   if (
     anthemBtn &&
@@ -740,15 +1502,19 @@ document.addEventListener("DOMContentLoaded", () => {
             .play()
             .catch(
               (error) => {
+
                 console.error(
                   "Audio play error:",
                   error
                 );
+
               }
             );
 
+
           anthemBtn.style.background =
             "#000";
+
 
         } else {
 
@@ -757,11 +1523,15 @@ document.addEventListener("DOMContentLoaded", () => {
           anthemAudio.currentTime =
             0;
 
+
           anthemBtn.style.background =
             "";
+
         }
+
       }
     );
+
   }
 
 });
