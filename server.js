@@ -458,6 +458,115 @@ app.post(
 );
 
 // =====================================================
+// CODING AGENT
+// =====================================================
+
+async function getCodingReply(message) {
+  const apiKey = process.env.SARVAM_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "SARVAM_API_KEY is missing from Render environment variables"
+    );
+  }
+
+  if (!message || typeof message !== "string" || message.trim() === "") {
+    throw new Error("Message must be a non-empty string");
+  }
+
+  const response = await axios.post(
+    "https://api.sarvam.ai/v1/chat/completions",
+    {
+      model: "sarvam-105b",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are Swayam Coding Agent, a professional programming assistant. Generate correct, runnable code when asked. Debug code carefully, identify the exact bug, explain why it happens, and provide the corrected code. Preserve the user's intended behavior. When useful, provide step-by-step explanations, edge cases, complexity analysis, and testing examples. Support C, C++, Java, Python, JavaScript, TypeScript, HTML, CSS, SQL, React, Node.js and other common programming languages. Put code inside fenced Markdown code blocks with the correct language tag. Do not invent errors that are not present in the supplied code. If the user has not provided enough information to fix a bug, clearly state what is missing and ask for the relevant code/error message.",
+        },
+        {
+          role: "user",
+          content: message.trim(),
+        },
+      ],
+      temperature: 0.2,
+      max_tokens: 10000,
+      reasoning_effort: null,
+      stream: false,
+    },
+    {
+      headers: {
+        "api-subscription-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      timeout: 30000,
+    }
+  );
+
+  const reply =
+    response.data?.choices?.[0]?.message?.content;
+
+  if (!reply) {
+    console.error(
+      "Unexpected coding-agent response:",
+      JSON.stringify(response.data, null, 2)
+    );
+    throw new Error("Coding agent returned an empty response");
+  }
+
+  return reply;
+}
+
+app.post(
+  "/api/coding",
+  authenticate,
+  async (req, res) => {
+    const message =
+      req.body?.message ??
+      req.body?.topic;
+
+    if (
+      !message ||
+      typeof message !== "string" ||
+      message.trim() === ""
+    ) {
+      return res.status(400).json({
+        reply: "Please enter a coding question or code.",
+        error: "Message must be a non-empty string",
+      });
+    }
+
+    try {
+      console.log("CODING AGENT REQUEST:", message);
+
+      const reply = await getCodingReply(message);
+
+      console.log("CODING AGENT RESPONSE SUCCESS");
+
+      return res.json({ reply });
+    } catch (error) {
+      console.error("================================");
+      console.error("CODING AGENT ERROR");
+      console.error("Status:", error.response?.status);
+      console.error("Message:", error.message);
+      console.error(
+        "Sarvam error response:",
+        JSON.stringify(error.response?.data, null, 2)
+      );
+      console.error("================================");
+
+      return res.status(error.response?.status || 500).json({
+        reply: "Coding agent error. Please try again.",
+        error:
+          error.response?.data?.error?.message ||
+          error.message ||
+          "Failed to get coding response",
+      });
+    }
+  }
+);
+
+// =====================================================
 // YOUTUBE VIDEO SEARCH
 // =====================================================
 
