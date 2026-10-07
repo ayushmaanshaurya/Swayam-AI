@@ -117,6 +117,43 @@
 
   </div>
 
+    <div id="learningDashboard" class="learning-dashboard" hidden>
+      <div class="learning-dashboard-backdrop" data-close-dashboard></div>
+      <section class="learning-dashboard-panel" role="dialog" aria-modal="true" aria-labelledby="learningDashboardTitle">
+        <div class="learning-dashboard-header">
+          <div>
+            <div class="learning-dashboard-eyebrow">🧠 Learning Twin</div>
+            <h2 id="learningDashboardTitle">Your progress</h2>
+            <p id="learningDashboardUser">Your learning snapshot</p>
+          </div>
+          <button id="closeLearningDashboard" class="learning-dashboard-close" type="button" aria-label="Close dashboard">×</button>
+        </div>
+
+        <div class="learning-dashboard-stats">
+          <div class="learning-stat"><span>Topics</span><strong id="dashboardTopics">0</strong></div>
+          <div class="learning-stat"><span>Avg mastery</span><strong id="dashboardMastery">—</strong></div>
+          <div class="learning-stat"><span>Analyses</span><strong id="dashboardAnalyses">0</strong></div>
+          <div class="learning-stat"><span>Active days</span><strong id="dashboardStreak">0</strong></div>
+        </div>
+
+        <div class="learning-dashboard-section">
+          <div class="learning-section-title">
+            <h3>Mastery by topic</h3>
+            <span>Mirror</span>
+          </div>
+          <div id="dashboardTopicsList" class="learning-topics-list"></div>
+        </div>
+
+        <div class="learning-dashboard-section">
+          <div class="learning-section-title">
+            <h3>Recent activity</h3>
+          </div>
+          <div id="dashboardRecent" class="learning-recent-list"></div>
+        </div>
+      </section>
+    </div>
+
+
 </div>
 
 <audio id="anthemAudio" src="audio/vishuaashi-bhojpuri-166899.mp3"></audio>
