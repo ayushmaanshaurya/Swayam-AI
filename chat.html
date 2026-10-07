@@ -93,6 +93,18 @@
     <div id="chat-box" class="chat-box"></div>
 
     <form id="chat-form" class="input-area">
+
+      <div id="mirrorTopicArea" class="mirror-topic-area" hidden>
+        <label for="mirrorTopicInput">Topic (optional)</label>
+        <input
+          id="mirrorTopicInput"
+          type="text"
+          placeholder="e.g. CPU Pipelining, DBMS, Operating Systems..."
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="chat-input-row">
       <input
         id="user-input"
         type="text"
@@ -100,6 +112,7 @@
         autocomplete="off"
       >
       <button type="submit">Send</button>
+      </div>
     </form>
 
   </div>
@@ -107,7 +120,7 @@
 </div>
 
 <audio id="anthemAudio" src="audio/vishuaashi-bhojpuri-166899.mp3"></audio>
-<script src="chat.js?v=4"></script>
+<script src="chat.js?v=5"></script>
 
 </body>
 </html>
