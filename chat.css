@@ -508,6 +508,9 @@ button:hover {
   max-width: 720px;
   align-self: flex-start;
 
+  /* Keep the full Mirror card visible inside the flex chat area. */
+  flex-shrink: 0;
+
   background: #fff;
   color: #111;
 
