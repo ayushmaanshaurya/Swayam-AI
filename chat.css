@@ -915,3 +915,52 @@ button:hover {
   }
 
 }
+
+
+/* =====================================================
+   MIRROR TOPIC INPUT
+   ===================================================== */
+
+.mirror-topic-area {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.mirror-topic-area[hidden] {
+  display: none;
+}
+
+.mirror-topic-area label {
+  padding-left: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mirror-topic-area input {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+}
+
+.chat-input-row {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .mirror-topic-area {
+    margin-bottom: 6px;
+  }
+
+  .chat-input-row {
+    gap: 6px;
+  }
+}
