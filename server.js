@@ -182,13 +182,6 @@ app.use(express.static(__dirname, { index: false }));
 // =====================================================
 // SUPABASE - LEARNING TWIN PERSISTENCE
 // =====================================================
-// =====================================================
-// SUPABASE - LEARNING TWIN PERSISTENCE
-// =====================================================
-
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ||
-  "https://nixoyntozysvmdcxwrnt.supabase.co";
 
 function getSupabaseSecretKey() {
   return (
