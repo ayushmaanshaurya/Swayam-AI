@@ -1033,3 +1033,119 @@ button:hover {
     gap: 6px;
   }
 }
+
+/* =====================================================
+   MIRROR / CHAT POLISH
+   ===================================================== */
+
+.chat-box {
+  padding: 22px 20px 28px;
+  gap: 14px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.input-area {
+  position: relative;
+  z-index: 5;
+  padding: 10px 12px 12px;
+  border-top: 1px solid #d8d8d8;
+  box-shadow: 0 -5px 18px rgba(0, 0, 0, 0.06);
+}
+
+.chat-input-row input {
+  min-width: 0;
+}
+
+.chat-input-row button {
+  min-width: 58px;
+  height: 38px;
+  padding: 0 15px;
+  font-weight: 600;
+}
+
+.mirror-result {
+  max-width: 760px;
+  margin: 4px 0 18px;
+  border-radius: 12px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.07);
+}
+
+.mirror-section {
+  padding: 16px 18px;
+}
+
+.mirror-section p {
+  max-width: 70ch;
+}
+
+.mirror-next-question {
+  margin: 18px 18px 12px;
+  padding: 16px 17px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mirror-next-question::after {
+  content: "Click to answer";
+  display: block;
+  margin-top: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.65px;
+  text-transform: uppercase;
+  color: #aaa;
+}
+
+.mirror-next-question:hover,
+.mirror-next-question:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+  outline: none;
+}
+
+.mirror-next-question:active {
+  transform: translateY(0);
+}
+
+.mirror-question {
+  max-width: 70ch;
+}
+
+.mirror-tags {
+  padding: 0 18px 20px;
+}
+
+@media (max-width: 700px) {
+  .chat-box {
+    padding: 16px 12px 22px;
+  }
+
+  .input-area {
+    padding: 8px;
+  }
+
+  .mirror-next-question {
+    margin: 14px 13px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-header {
+    gap: 8px;
+  }
+
+  .header-actions {
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .header-actions button {
+    flex: 0 0 auto;
+  }
+
+  .profile-pic {
+    flex: 0 0 auto;
+  }
+}
