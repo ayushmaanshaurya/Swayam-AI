@@ -43,6 +43,154 @@ const JWT_SECRET =
   process.env.JWT_SECRET || "supersecretkey";
 
 // =====================================================
+// SUPABASE - LEARNING TWIN PERSISTENCE
+// =====================================================
+
+const SUPABASE_URL =
+  process.env.SUPABASE_URL ||
+  "https://nixoyntozysvmdcxwrnt.supabase.co";
+
+function getSupabaseSecretKey() {
+  return (
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    ""
+  );
+}
+
+async function getStoredLearningTwin(username) {
+  const secretKey = getSupabaseSecretKey();
+
+  if (!secretKey) {
+    console.warn(
+      "SUPABASE_SECRET_KEY is missing. Using browser Learning Twin only."
+    );
+    return {};
+  }
+
+  try {
+    const response = await axios.get(
+      SUPABASE_URL + "/rest/v1/learning_twins",
+      {
+        params: {
+          username: "eq." + username,
+          select: "profile",
+          limit: 1,
+        },
+        headers: {
+          apikey: secretKey,
+        },
+        timeout: 10000,
+      }
+    );
+
+    return response.data?.[0]?.profile || {};
+  } catch (error) {
+    console.error(
+      "SUPABASE LEARNING TWIN READ ERROR:",
+      error.response?.data || error.message
+    );
+    return {};
+  }
+}
+
+async function saveLearningTwin(username, profile) {
+  const secretKey = getSupabaseSecretKey();
+
+  if (!secretKey) {
+    return false;
+  }
+
+  try {
+    await axios.post(
+      SUPABASE_URL + "/rest/v1/learning_twins",
+      {
+        username,
+        profile,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        params: {
+          on_conflict: "username",
+        },
+        headers: {
+          apikey: secretKey,
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates,return=minimal",
+        },
+        timeout: 10000,
+      }
+    );
+
+    return true;
+  } catch (error) {
+    console.error(
+      "SUPABASE LEARNING TWIN WRITE ERROR:",
+      error.response?.data || error.message
+    );
+    return false;
+  }
+}
+
+function updateStoredTwin(profile, analysis) {
+  const twin =
+    profile && typeof profile === "object"
+      ? { ...profile }
+      : {};
+
+  const topic = analysis.topic || "General";
+
+  twin.topics =
+    twin.topics && typeof twin.topics === "object"
+      ? { ...twin.topics }
+      : {};
+
+  twin.history =
+    Array.isArray(twin.history)
+      ? [...twin.history]
+      : [];
+
+  twin.topics[topic] = {
+    mastery_score: analysis.mastery_score ?? 0,
+    understanding: analysis.understanding || "partial",
+    strengths: Array.isArray(analysis.strengths)
+      ? analysis.strengths
+      : [],
+    misconceptions: Array.isArray(analysis.misconceptions)
+      ? analysis.misconceptions
+      : [],
+    missing_points: Array.isArray(analysis.missing_points)
+      ? analysis.missing_points
+      : [],
+    confidence: analysis.confidence || "medium",
+    concept_tags: Array.isArray(analysis.concept_tags)
+      ? analysis.concept_tags
+      : [],
+    updated_at: new Date().toISOString(),
+  };
+
+  twin.history.push({
+    topic,
+    mastery_score: analysis.mastery_score ?? 0,
+    misconceptions: Array.isArray(analysis.misconceptions)
+      ? analysis.misconceptions
+      : [],
+    missing_points: Array.isArray(analysis.missing_points)
+      ? analysis.missing_points
+      : [],
+    timestamp: new Date().toISOString(),
+  });
+
+  if (twin.history.length > 50) {
+    twin.history = twin.history.slice(-50);
+  }
+
+  twin.updated_at = new Date().toISOString();
+
+  return twin;
+}
+
+// =====================================================
 // FILE UPLOAD
 // =====================================================
 
@@ -759,116 +907,82 @@ app.post(
   "/api/mirror",
   authenticate,
   async (req, res) => {
-
-    const topic =
-      req.body?.topic || "";
-
-    const explanation =
-      req.body?.explanation;
-
-    const profile =
-      req.body?.profile || {};
-
+    const topic = req.body?.topic || "";
+    const explanation = req.body?.explanation;
+    const browserProfile = req.body?.profile || {};
 
     if (
       !explanation ||
       typeof explanation !== "string" ||
       explanation.trim() === ""
     ) {
-
       return res.status(400).json({
-
-        error:
-          "Please explain the concept in your own words."
-
+        error: "Please explain the concept in your own words.",
       });
-
     }
-
 
     try {
+      console.log("SWAYAM MIRROR REQUEST:", {
+        user: req.user,
+        topic,
+        explanationLength: explanation.length,
+      });
 
-      console.log(
-        "SWAYAM MIRROR REQUEST:",
-        {
-          user: req.user,
-          topic,
-          explanationLength:
-            explanation.length
-        }
+      // Supabase is the server-side source of truth when available.
+      // Browser data is only used as a fallback for first-time users.
+      const storedProfile = await getStoredLearningTwin(req.user);
+      const previousProfile =
+        storedProfile && Object.keys(storedProfile).length > 0
+          ? storedProfile
+          : browserProfile;
+
+      const analysis = await getMirrorReply(
+        topic,
+        explanation,
+        previousProfile
       );
 
-
-      const analysis =
-        await getMirrorReply(
-          topic,
-          explanation,
-          profile
-        );
-
-
-      console.log(
-        "SWAYAM MIRROR RESPONSE SUCCESS"
+      const updatedProfile = updateStoredTwin(
+        previousProfile,
+        analysis
       );
 
+      const persisted = await saveLearningTwin(
+        req.user,
+        updatedProfile
+      );
+
+      console.log(
+        "SWAYAM MIRROR RESPONSE SUCCESS - Learning Twin persisted:",
+        persisted
+      );
 
       return res.json({
-        analysis
+        analysis,
+        learningTwin: updatedProfile,
+        persisted,
       });
-
-
     } catch (error) {
-
-      console.error(
-        "================================"
-      );
-
-      console.error(
-        "SWAYAM MIRROR ERROR"
-      );
-
-      console.error(
-        "Status:",
-        error.response?.status
-      );
-
-      console.error(
-        "Message:",
-        error.message
-      );
-
+      console.error("================================");
+      console.error("SWAYAM MIRROR ERROR");
+      console.error("Status:", error.response?.status);
+      console.error("Message:", error.message);
       console.error(
         "Sarvam error response:",
-        JSON.stringify(
-          error.response?.data,
-          null,
-          2
-        )
+        JSON.stringify(error.response?.data, null, 2)
       );
+      console.error("================================");
 
-      console.error(
-        "================================"
-      );
-
-
-      return res.status(
-        error.response?.status || 500
-      ).json({
-
+      return res.status(error.response?.status || 500).json({
         error:
-          error.response?.data
-            ?.error?.message ||
-
+          error.response?.data?.error?.message ||
           error.message ||
-
-          "Unable to analyze the explanation"
-
+          "Unable to analyze the explanation",
       });
-
     }
-
   }
 );
+
 // =====================================================
 // YOUTUBE VIDEO SEARCH
 // =====================================================
