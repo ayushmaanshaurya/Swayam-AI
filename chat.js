@@ -78,10 +78,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const dashboardClose = document.getElementById("closeLearningDashboard");
   const profileButton = document.getElementById("navProfilePic");
 
-  function openLearningDashboard() {
+  async function openLearningDashboard() {
     if (!dashboard) return;
 
-    const twin = getLearningTwin();
+    const twin = await loadLearningTwinFromServer();
     const topics = Object.entries(twin.topics || {});
     const history = Array.isArray(twin.history) ? twin.history : [];
 
@@ -401,6 +401,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  async function loadLearningTwinFromServer() {
+    try {
+      const res = await fetch("/api/learning-twin", {
+        credentials: "same-origin",
+      });
+
+      if (!res.ok) {
+        console.warn("LEARNING TWIN SYNC READ:", res.status);
+        return getLearningTwin();
+      }
+
+      const data = await res.json();
+      const serverTwin = data.learningTwin || {};
+
+      localStorage.setItem(
+        "learningTwin",
+        JSON.stringify(serverTwin)
+      );
+
+      return serverTwin;
+    } catch (error) {
+      console.warn("LEARNING TWIN SYNC READ ERROR:", error);
+      return getLearningTwin();
+    }
+  }
+
+
+
 
   // =====================================================
   // UPDATE CODING MODE UI
@@ -651,10 +679,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     explanation
   ) {
 
-    const learningTwin =
-      getLearningTwin();
-
-
     const res =
       await fetch(
         "/api/mirror",
@@ -670,10 +694,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 topic || "",
 
               explanation:
-                explanation,
-
-              profile:
-                learningTwin
+                explanation
 
             })
         }
@@ -702,7 +723,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-    return data.analysis;
+    if (data.learningTwin) {
+      localStorage.setItem(
+        "learningTwin",
+        JSON.stringify(data.learningTwin)
+      );
+    }
+
+    return data;
   }
 
 
@@ -711,13 +739,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   // =====================================================
 
   function displayMirrorResult(
-    analysis
+    mirrorResult
   ) {
 
-    // Save result into Learning Twin
-    saveLearningTwin(
-      analysis
-    );
+    const analysis = mirrorResult?.analysis || mirrorResult || {};
+
+    if (mirrorResult?.learningTwin) {
+      localStorage.setItem(
+        "learningTwin",
+        JSON.stringify(mirrorResult.learningTwin)
+      );
+    }
 
 
     const container =
@@ -1335,7 +1367,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
           displayMirrorResult(
-            analysis
+            mirrorResult
           );
 
 
