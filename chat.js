@@ -922,6 +922,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       container
     );
 
+    // Make the next challenge actionable: clicking it focuses the
+    // composer and pre-fills the exact question for the learner.
+    const nextChallenge = container.querySelector(".mirror-next-question");
+    if (nextChallenge) {
+      nextChallenge.setAttribute("role", "button");
+      nextChallenge.setAttribute("tabindex", "0");
+      const useChallenge = () => {
+        if (!userInput) return;
+        userInput.value = analysis.next_question || "";
+        userInput.focus();
+        userInput.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      };
+      nextChallenge.addEventListener("click", useChallenge);
+      nextChallenge.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          useChallenge();
+        }
+      });
+    }
 
     chatBox.scrollTop =
       chatBox.scrollHeight;
