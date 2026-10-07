@@ -420,3 +420,58 @@ button:hover {
     max-width: 100%;
   }
 }
+
+
+/* ========================================
+   CODING AGENT
+======================================== */
+
+#codingModeBtn {
+  background: #fff;
+  color: #000;
+  border: 1px solid #fff;
+  font-weight: 600;
+}
+
+#codingModeBtn:hover {
+  background: #e5e5e5;
+}
+
+#codingModeBtn.active {
+  background: #fff;
+  color: #000;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #555;
+}
+
+.message.ai pre {
+  background: #111;
+  color: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  overflow-x: auto;
+}
+
+.message.ai pre code {
+  background: transparent;
+  color: #fff;
+  padding: 0;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.message.ai code {
+  background: #e5e5e5;
+  color: #111;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+}
+
+@media (max-width: 700px) {
+  #codingModeBtn {
+    font-size: 11px;
+    padding: 7px 9px;
+  }
+}
