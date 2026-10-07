@@ -122,6 +122,16 @@ app.get("/api/session", authenticate, (req, res) => {
   }});
 });
 
+app.get("/api/learning-twin", authenticate, async (req, res) => {
+  try {
+    const learningTwin = await getStoredLearningTwin(req.user.id, req.accessToken);
+    return res.json({ learningTwin });
+  } catch (error) {
+    console.error("LEARNING TWIN FETCH ERROR:", error.message);
+    return res.status(500).json({ message: "Unable to load Learning Twin" });
+  }
+});
+
 app.post("/api/register", async (req, res) => {
   try {
     const username = String(req.body?.username || "").trim();
@@ -183,141 +193,95 @@ app.use(express.static(__dirname, { index: false }));
 // SUPABASE - LEARNING TWIN PERSISTENCE
 // =====================================================
 
-function getSupabaseSecretKey() {
-  return (
-    process.env.SUPABASE_SECRET_KEY ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    ""
-  );
-}
-
-async function getStoredLearningTwin(username) {
-  const secretKey = getSupabaseSecretKey();
-
-  if (!secretKey) {
-    console.warn(
-      "SUPABASE_SECRET_KEY is missing. Using browser Learning Twin only."
-    );
-    return {};
-  }
+async function getStoredLearningTwin(userId, accessToken) {
+  if (!userId || !accessToken || !SUPABASE_PUBLISHABLE_KEY) return {};
 
   try {
-    const response = await axios.get(
-      SUPABASE_URL + "/rest/v1/learning_twins",
-      {
-        params: {
-          username: "eq." + username,
-          select: "profile",
-          limit: 1,
-        },
-        headers: {
-          apikey: secretKey,
-        },
-        timeout: 10000,
-      }
-    );
+    const response = await axios.get(SUPABASE_URL + "/rest/v1/learning_twins", {
+      params: { username: "eq." + userId, select: "profile,updated_at", limit: 1 },
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: "Bearer " + accessToken,
+      },
+      timeout: 10000,
+      validateStatus: () => true,
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      console.error("SUPABASE LEARNING TWIN READ ERROR:", response.data);
+      return {};
+    }
 
     return response.data?.[0]?.profile || {};
   } catch (error) {
-    console.error(
-      "SUPABASE LEARNING TWIN READ ERROR:",
-      error.response?.data || error.message
-    );
+    console.error("SUPABASE LEARNING TWIN READ ERROR:", error.response?.data || error.message);
     return {};
   }
 }
 
-async function saveLearningTwin(username, profile) {
-  const secretKey = getSupabaseSecretKey();
-
-  if (!secretKey) {
-    return false;
-  }
+async function saveLearningTwin(userId, accessToken, profile) {
+  if (!userId || !accessToken || !SUPABASE_PUBLISHABLE_KEY) return false;
 
   try {
-    await axios.post(
+    const response = await axios.post(
       SUPABASE_URL + "/rest/v1/learning_twins",
       {
-        username,
+        username: userId,
         profile,
         updated_at: new Date().toISOString(),
       },
       {
-        params: {
-          on_conflict: "username",
-        },
+        params: { on_conflict: "username" },
         headers: {
-          apikey: secretKey,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: "Bearer " + accessToken,
           "Content-Type": "application/json",
           Prefer: "resolution=merge-duplicates,return=minimal",
         },
         timeout: 10000,
+        validateStatus: () => true,
       }
     );
 
+    if (response.status < 200 || response.status >= 300) {
+      console.error("SUPABASE LEARNING TWIN WRITE ERROR:", response.data);
+      return false;
+    }
+
     return true;
   } catch (error) {
-    console.error(
-      "SUPABASE LEARNING TWIN WRITE ERROR:",
-      error.response?.data || error.message
-    );
+    console.error("SUPABASE LEARNING TWIN WRITE ERROR:", error.response?.data || error.message);
     return false;
   }
 }
 
 function updateStoredTwin(profile, analysis) {
-  const twin =
-    profile && typeof profile === "object"
-      ? { ...profile }
-      : {};
-
+  const twin = profile && typeof profile === "object" ? { ...profile } : {};
   const topic = analysis.topic || "General";
 
-  twin.topics =
-    twin.topics && typeof twin.topics === "object"
-      ? { ...twin.topics }
-      : {};
-
-  twin.history =
-    Array.isArray(twin.history)
-      ? [...twin.history]
-      : [];
+  twin.topics = twin.topics && typeof twin.topics === "object" ? { ...twin.topics } : {};
+  twin.history = Array.isArray(twin.history) ? [...twin.history] : [];
 
   twin.topics[topic] = {
     mastery_score: analysis.mastery_score ?? 0,
     understanding: analysis.understanding || "partial",
-    strengths: Array.isArray(analysis.strengths)
-      ? analysis.strengths
-      : [],
-    misconceptions: Array.isArray(analysis.misconceptions)
-      ? analysis.misconceptions
-      : [],
-    missing_points: Array.isArray(analysis.missing_points)
-      ? analysis.missing_points
-      : [],
+    strengths: Array.isArray(analysis.strengths) ? analysis.strengths : [],
+    misconceptions: Array.isArray(analysis.misconceptions) ? analysis.misconceptions : [],
+    missing_points: Array.isArray(analysis.missing_points) ? analysis.missing_points : [],
     confidence: analysis.confidence || "medium",
-    concept_tags: Array.isArray(analysis.concept_tags)
-      ? analysis.concept_tags
-      : [],
+    concept_tags: Array.isArray(analysis.concept_tags) ? analysis.concept_tags : [],
     updated_at: new Date().toISOString(),
   };
 
   twin.history.push({
     topic,
     mastery_score: analysis.mastery_score ?? 0,
-    misconceptions: Array.isArray(analysis.misconceptions)
-      ? analysis.misconceptions
-      : [],
-    missing_points: Array.isArray(analysis.missing_points)
-      ? analysis.missing_points
-      : [],
+    misconceptions: Array.isArray(analysis.misconceptions) ? analysis.misconceptions : [],
+    missing_points: Array.isArray(analysis.missing_points) ? analysis.missing_points : [],
     timestamp: new Date().toISOString(),
   });
 
-  if (twin.history.length > 50) {
-    twin.history = twin.history.slice(-50);
-  }
-
+  if (twin.history.length > 50) twin.history = twin.history.slice(-50);
   twin.updated_at = new Date().toISOString();
 
   return twin;
@@ -871,7 +835,7 @@ app.post(
   async (req, res) => {
     const topic = req.body?.topic || "";
     const explanation = req.body?.explanation;
-    const browserProfile = req.body?.profile || {};
+    const browserProfile = {};
 
     if (
       !explanation ||
@@ -892,11 +856,11 @@ app.post(
 
       // Supabase is the server-side source of truth when available.
       // Browser data is only used as a fallback for first-time users.
-      const storedProfile = await getStoredLearningTwin(req.user.id);
-      const previousProfile =
-        storedProfile && Object.keys(storedProfile).length > 0
-          ? storedProfile
-          : browserProfile;
+      const storedProfile = await getStoredLearningTwin(
+        req.user.id,
+        req.accessToken
+      );
+      const previousProfile = storedProfile;
 
       const analysis = await getMirrorReply(
         topic,
@@ -910,7 +874,8 @@ app.post(
       );
 
       const persisted = await saveLearningTwin(
-        req.user,
+        req.user.id,
+        req.accessToken,
         updatedProfile
       );
 
@@ -918,6 +883,12 @@ app.post(
         "SWAYAM MIRROR RESPONSE SUCCESS - Learning Twin persisted:",
         persisted
       );
+
+      if (!persisted) {
+        return res.status(503).json({
+          error: "Learning Twin could not be saved. Please try again.",
+        });
+      }
 
       return res.json({
         analysis,
