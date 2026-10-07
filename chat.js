@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const anthemBtn = document.getElementById("anthemBtn");
   const anthemAudio = document.getElementById("anthemAudio");
-
+  const bhojuriBtn = document.getElementById("bhojpuriBtn");
   if (bhojpuriBtn && bhojpuriAudio) {
     bhojpuriBtn.addEventListener("click", () => {
       if (bhojpuriAudio.paused) {
