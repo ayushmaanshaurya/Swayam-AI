@@ -273,10 +273,12 @@ async function getSarvamReply(message) {
           },
         ],
 
-        temperature: 0.7,
+        temperature: 0.5,
 
-        max_tokens: 500,
+        max_tokens: 10000,
 
+        reasoning_effort: null,
+        
         stream: false,
       },
 
