@@ -758,6 +758,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    function makeTableCell(items, emptyText) {
+
+      if (!items.length) {
+        return escapeHtml(emptyText);
+      }
+
+      return items
+        .map(item => escapeHtml(item))
+        .join("<br>• ");
+    }
+
+
     container.innerHTML = `
 
       <div class="mirror-header">
@@ -781,6 +793,51 @@ document.addEventListener("DOMContentLoaded", () => {
             Mastery
           </div>
         </div>
+
+      </div>
+
+
+      <div class="mirror-analysis-table-wrap">
+
+        <table class="mirror-analysis-table">
+
+          <caption>Learning Analysis</caption>
+
+          <tbody>
+
+            <tr>
+              <th scope="row">Mastery</th>
+              <td>${score}/100</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Understanding</th>
+              <td>${understanding}</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Confidence</th>
+              <td>${confidence}</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Strengths</th>
+              <td>${makeTableCell(strengths, "None detected yet.")}</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Possible misconceptions</th>
+              <td>${makeTableCell(misconceptions, "No clear misconceptions detected.")}</td>
+            </tr>
+
+            <tr>
+              <th scope="row">Missing points</th>
+              <td>${makeTableCell(missingPoints, "No important missing points detected.")}</td>
+            </tr>
+
+          </tbody>
+
+        </table>
 
       </div>
 
