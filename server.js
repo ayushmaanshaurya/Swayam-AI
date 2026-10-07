@@ -565,7 +565,310 @@ app.post(
     }
   }
 );
+// =====================================================
+// SWAYAM MIRROR - LEARNING ANALYSIS AGENT
+// =====================================================
 
+function parseMirrorJson(text) {
+  const fence = String.fromCharCode(96).repeat(3);
+
+  const cleaned = String(text || "")
+    .replaceAll(fence + "json", "")
+    .replaceAll(fence, "")
+    .trim();
+
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+
+  if (start === -1 || end <= start) {
+    throw new Error("Mirror response was not valid JSON");
+  }
+
+  return JSON.parse(cleaned.slice(start, end + 1));
+}
+
+
+async function getMirrorReply(topic, explanation, profile) {
+
+  const apiKey = process.env.SARVAM_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "SARVAM_API_KEY is missing from Render environment variables"
+    );
+  }
+
+  const safeTopic =
+    String(topic || "Infer the topic").slice(0, 500);
+
+  const safeExplanation =
+    String(explanation || "")
+      .trim()
+      .slice(0, 12000);
+
+  if (!safeExplanation) {
+    throw new Error(
+      "Explanation must be a non-empty string"
+    );
+  }
+
+  const profileText =
+    JSON.stringify(profile || {}).slice(0, 5000);
+
+
+  const response = await axios.post(
+    "https://api.sarvam.ai/v1/chat/completions",
+
+    {
+      model: "sarvam-105b",
+
+      messages: [
+
+        {
+          role: "system",
+
+          content:
+            `You are Swayam Mirror, a learning-science focused AI tutor.
+
+Your job is NOT simply to give the student the correct answer.
+
+Instead, analyze the student's own explanation.
+
+Identify:
+
+1. What the student understands correctly.
+2. Misconceptions.
+3. Important missing concepts.
+4. How confident the diagnosis is.
+5. An estimated mastery score.
+6. A useful next question that targets the student's weakest important concept.
+
+Be supportive but honest.
+
+Never shame the learner.
+
+Do not say that the student is stupid, bad, weak as a person, or anything insulting.
+
+The mastery score is only an estimate based on the submitted explanation.
+
+Return ONLY valid JSON.
+
+Do not use Markdown.
+
+Do not put the JSON inside a code block.
+
+The JSON must contain exactly these fields:
+
+{
+  "topic": "string",
+  "mastery_score": 0,
+  "understanding": "strong|partial|weak",
+  "strengths": [],
+  "misconceptions": [],
+  "missing_points": [],
+  "confidence": "high|medium|low",
+  "feedback": "string",
+  "next_question": "string",
+  "concept_tags": []
+}
+
+Rules:
+
+- mastery_score must be an integer from 0 to 100.
+- strengths must be an array of short strings.
+- misconceptions must be an array of short strings.
+- missing_points must be an array of short strings.
+- concept_tags must be an array of short strings.
+- If the explanation is correct, misconceptions may be empty.
+- If the explanation is incomplete, identify what is missing.
+- Do not invent misconceptions.
+- The next_question must target the weakest important concept.
+- Infer the topic if the topic hint is empty.`
+        },
+
+        {
+          role: "user",
+
+          content:
+            "Topic hint:\n" +
+            safeTopic +
+
+            "\n\nStudent explanation:\n" +
+            safeExplanation +
+
+            "\n\nPrevious Learning Twin data:\n" +
+            profileText
+        }
+
+      ],
+
+      temperature: 0.2,
+
+      max_tokens: 5000,
+
+      reasoning_effort: null,
+
+      stream: false
+    },
+
+    {
+      headers: {
+        "api-subscription-key": apiKey,
+
+        "Content-Type":
+          "application/json"
+      },
+
+      timeout: 30000
+    }
+  );
+
+
+  const raw =
+    response.data
+      ?.choices?.[0]
+      ?.message?.content;
+
+
+  if (!raw) {
+
+    console.error(
+      "Unexpected Mirror response:",
+      JSON.stringify(
+        response.data,
+        null,
+        2
+      )
+    );
+
+    throw new Error(
+      "Swayam Mirror returned an empty response"
+    );
+  }
+
+
+  return parseMirrorJson(raw);
+}
+
+
+// =====================================================
+// MIRROR API ROUTE
+// =====================================================
+
+app.post(
+  "/api/mirror",
+  authenticate,
+  async (req, res) => {
+
+    const topic =
+      req.body?.topic || "";
+
+    const explanation =
+      req.body?.explanation;
+
+    const profile =
+      req.body?.profile || {};
+
+
+    if (
+      !explanation ||
+      typeof explanation !== "string" ||
+      explanation.trim() === ""
+    ) {
+
+      return res.status(400).json({
+
+        error:
+          "Please explain the concept in your own words."
+
+      });
+
+    }
+
+
+    try {
+
+      console.log(
+        "SWAYAM MIRROR REQUEST:",
+        {
+          user: req.user,
+          topic,
+          explanationLength:
+            explanation.length
+        }
+      );
+
+
+      const analysis =
+        await getMirrorReply(
+          topic,
+          explanation,
+          profile
+        );
+
+
+      console.log(
+        "SWAYAM MIRROR RESPONSE SUCCESS"
+      );
+
+
+      return res.json({
+        analysis
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "================================"
+      );
+
+      console.error(
+        "SWAYAM MIRROR ERROR"
+      );
+
+      console.error(
+        "Status:",
+        error.response?.status
+      );
+
+      console.error(
+        "Message:",
+        error.message
+      );
+
+      console.error(
+        "Sarvam error response:",
+        JSON.stringify(
+          error.response?.data,
+          null,
+          2
+        )
+      );
+
+      console.error(
+        "================================"
+      );
+
+
+      return res.status(
+        error.response?.status || 500
+      ).json({
+
+        error:
+          error.response?.data
+            ?.error?.message ||
+
+          error.message ||
+
+          "Unable to analyze the explanation"
+
+      });
+
+    }
+
+  }
+);
 // =====================================================
 // YOUTUBE VIDEO SEARCH
 // =====================================================
