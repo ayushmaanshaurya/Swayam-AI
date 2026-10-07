@@ -1149,3 +1149,261 @@ button:hover {
     flex: 0 0 auto;
   }
 }
+
+/* =====================================================
+   LEARNING TWIN DASHBOARD
+   ===================================================== */
+
+body.dashboard-open {
+  overflow: hidden;
+}
+
+.learning-dashboard[hidden] {
+  display: none;
+}
+
+.learning-dashboard {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.learning-dashboard-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(3px);
+}
+
+.learning-dashboard-panel {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  overflow-y: auto;
+  background: #fff;
+  color: #111;
+  border: 1px solid #d8d8d8;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.25);
+  animation: dashboardAppear 0.2s ease;
+}
+
+@keyframes dashboardAppear {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.learning-dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 24px 18px;
+  background: #000;
+  color: #fff;
+}
+
+.learning-dashboard-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #bdbdbd;
+}
+
+.learning-dashboard-header h2 {
+  margin: 5px 0 3px;
+  font-size: 24px;
+}
+
+.learning-dashboard-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #cfcfcf;
+}
+
+.learning-dashboard-close {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #444;
+  background: #111;
+  font-size: 23px;
+  line-height: 1;
+}
+
+.learning-dashboard-close:hover {
+  background: #222;
+}
+
+.learning-dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 16px 18px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.learning-stat {
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 11px;
+}
+
+.learning-stat span {
+  display: block;
+  font-size: 10px;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.learning-stat strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 19px;
+}
+
+.learning-dashboard-section {
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.learning-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.learning-section-title h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.learning-section-title span {
+  font-size: 10px;
+  font-weight: 700;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.learning-topic-row {
+  margin-bottom: 13px;
+}
+
+.learning-topic-row:last-child {
+  margin-bottom: 0;
+}
+
+.learning-topic-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.learning-topic-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.learning-topic-score {
+  font-weight: 700;
+}
+
+.learning-progress {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e9e9e9;
+}
+
+.learning-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #111;
+  transition: width 0.35s ease;
+}
+
+.learning-recent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.learning-recent-row:last-child {
+  border-bottom: 0;
+}
+
+.learning-recent-row div {
+  min-width: 0;
+}
+
+.learning-recent-row strong,
+.learning-recent-row span {
+  display: block;
+}
+
+.learning-recent-row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.learning-recent-row span {
+  margin-top: 3px;
+  font-size: 11px;
+  color: #777;
+}
+
+.learning-recent-row b {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.learning-empty {
+  padding: 16px;
+  text-align: center;
+  color: #777;
+  font-size: 13px;
+  border: 1px dashed #ccc;
+  border-radius: 10px;
+}
+
+@media (max-width: 560px) {
+  .learning-dashboard {
+    padding: 10px;
+  }
+
+  .learning-dashboard-panel {
+    max-height: calc(100vh - 20px);
+    border-radius: 14px;
+  }
+
+  .learning-dashboard-header {
+    padding: 20px 18px 16px;
+  }
+
+  .learning-dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 12px;
+  }
+
+  .learning-dashboard-section {
+    padding: 15px;
+  }
+}
