@@ -24,13 +24,70 @@
     <div class="chat-header">
       <div class="logo">AI Tutor</div>
       <div class="header-actions">
-        <button id="codingModeBtn" title="Open Coding Agent">💻 Coding</button>
-        <button id="langToggle">EN</button>
-        <button id="micBtn">🎤</button>
-        <button id="anthemBtn">🇮🇳</button>
-        <img id="navProfilePic" class="profile-pic">
-        <button id="logoutBtn">Logout</button>
-      </div>
+
+  <!-- Coding Agent -->
+  <button
+    id="codingModeBtn"
+    type="button"
+    title="Open Coding Agent"
+    aria-pressed="false"
+  >
+    💻 Coding
+  </button>
+
+  <!-- Swayam Mirror -->
+  <button
+    id="mirrorModeBtn"
+    type="button"
+    title="Analyze your understanding and find misconceptions"
+    aria-pressed="false"
+  >
+    🪞 Mirror
+  </button>
+
+  <!-- Language -->
+  <button
+    id="langToggle"
+    type="button"
+    title="Change language"
+  >
+    EN
+  </button>
+
+  <!-- Voice -->
+  <button
+    id="micBtn"
+    type="button"
+    title="Voice input"
+  >
+    🎤
+  </button>
+
+  <!-- National Anthem -->
+  <button
+    id="anthemBtn"
+    type="button"
+    title="Play national anthem"
+  >
+    🇮🇳
+  </button>
+
+  <!-- Profile -->
+  <img
+    id="navProfilePic"
+    class="profile-pic"
+    alt="Profile"
+  >
+
+  <!-- Logout -->
+  <button
+    id="logoutBtn"
+    type="button"
+  >
+    Logout
+  </button>
+
+</div>
     </div>
 
     <div id="chat-box" class="chat-box"></div>
@@ -50,7 +107,7 @@
 </div>
 
 <audio id="anthemAudio" src="audio/vishuaashi-bhojpuri-166899.mp3"></audio>
-<script src="chat.js?v=3"></script>
+<script src="chat.js?v=4"></script>
 
 </body>
 </html>
