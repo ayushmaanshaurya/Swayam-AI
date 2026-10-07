@@ -29,15 +29,15 @@
       </div>
 
       <form id="loginForm" class="form active">
-        <input id="loginUser" placeholder="Username" required>
-        <input id="loginPass" type="password" placeholder="Password" required>
+        <input id="loginEmail" type="email" placeholder="Email" autocomplete="email" required>
+        <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password" required>
         <button type="submit">Login</button>
       </form>
 
       <form id="registerForm" class="form">
-        <input id="regUser" placeholder="Username" required>
-        <input id="regPass" type="password" placeholder="Password" required>
-        <input id="profilePic" type="file" accept="image/*">
+        <input id="regUser" placeholder="Username" autocomplete="username" required>
+        <input id="regEmail" type="email" placeholder="Email" autocomplete="email" required>
+        <input id="regPass" type="password" placeholder="Password" autocomplete="new-password" required>
         <button type="submit">Register</button>
       </form>
 
