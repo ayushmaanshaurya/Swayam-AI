@@ -96,6 +96,7 @@ app.post(
       return res.json({
         message: "Registered successfully",
       });
+
     } catch (error) {
       console.error(
         "REGISTER ERROR:",
@@ -148,6 +149,7 @@ app.post("/api/login", async (req, res) => {
       token,
       profilePic: user.profilePic,
     });
+
   } catch (error) {
     console.error(
       "LOGIN ERROR:",
@@ -165,6 +167,7 @@ app.post("/api/login", async (req, res) => {
 // =====================================================
 
 function authenticate(req, res, next) {
+
   const header =
     req.headers.authorization;
 
@@ -181,6 +184,7 @@ function authenticate(req, res, next) {
     header.split(" ")[1];
 
   try {
+
     const decoded =
       jwt.verify(
         token,
@@ -191,7 +195,9 @@ function authenticate(req, res, next) {
       decoded.username;
 
     next();
+
   } catch (error) {
+
     return res.status(403).json({
       message: "Invalid token",
     });
@@ -206,6 +212,7 @@ app.get(
   "/api/profile",
   authenticate,
   (req, res) => {
+
     const user =
       users[req.user];
 
@@ -228,17 +235,16 @@ app.get(
 // =====================================================
 
 async function getSarvamReply(message) {
+
   const apiKey =
     process.env.SARVAM_API_KEY;
 
-  // Check API key
   if (!apiKey) {
     throw new Error(
       "SARVAM_API_KEY is missing from Render environment variables"
     );
   }
 
-  // Check message
   if (
     !message ||
     typeof message !== "string" ||
@@ -255,22 +261,26 @@ async function getSarvamReply(message) {
 
   const response =
     await axios.post(
+
       "https://api.sarvam.ai/v1/chat/completions",
 
       {
         model: "sarvam-105b",
 
         messages: [
+
           {
             role: "system",
             content:
-              "You are Swayam, a helpful AI tutor. Give clear, accurate and useful answers. You can communicate in English and Indian languages.",
+              "You are Swayam, the AI tutor of the Swayam AI application. Your name is Swayam. Never call yourself Swemo. Give clear, accurate and useful answers. You can communicate in English and Indian languages.",
           },
+
           {
             role: "user",
             content:
               message.trim(),
           },
+
         ],
 
         temperature: 0.5,
@@ -278,12 +288,13 @@ async function getSarvamReply(message) {
         max_tokens: 10000,
 
         reasoning_effort: null,
-        
+
         stream: false,
       },
 
       {
         headers: {
+
           "api-subscription-key":
             apiKey,
 
@@ -300,16 +311,13 @@ async function getSarvamReply(message) {
     response.status
   );
 
-  console.log(
-    "Sarvam response received"
-  );
-
   const reply =
     response.data
       ?.choices?.[0]
       ?.message?.content;
 
   if (!reply) {
+
     console.error(
       "Unexpected Sarvam response:",
       JSON.stringify(
@@ -335,6 +343,7 @@ async function handleAIRequest(
   req,
   res
 ) {
+
   const message =
     req.body?.topic ??
     req.body?.message;
@@ -344,21 +353,23 @@ async function handleAIRequest(
     message
   );
 
-  // Validate message
   if (
     !message ||
     typeof message !== "string" ||
     message.trim() === ""
   ) {
+
     return res.status(400).json({
       reply:
         "Please enter a message.",
+
       error:
         "Message must be a non-empty string",
     });
   }
 
   try {
+
     const reply =
       await getSarvamReply(
         message
@@ -371,7 +382,9 @@ async function handleAIRequest(
     return res.json({
       reply: reply,
     });
+
   } catch (error) {
+
     console.error(
       "================================"
     );
@@ -407,8 +420,10 @@ async function handleAIRequest(
       error.response?.status || 500;
 
     return res.status(status).json({
+
       reply:
         "AI server error",
+
       error:
         error.response?.data
           ?.error?.message ||
@@ -429,7 +444,6 @@ app.post(
 );
 
 // Protected endpoint
-// Your chat.js currently uses this one.
 app.post(
   "/api/explain-secure",
   authenticate,
@@ -444,11 +458,157 @@ app.post(
 );
 
 // =====================================================
+// YOUTUBE VIDEO SEARCH
+// =====================================================
+
+app.get(
+  "/api/videos",
+  authenticate,
+  async (req, res) => {
+
+    try {
+
+      const query =
+        req.query.q;
+
+      if (
+        !query ||
+        query.trim() === ""
+      ) {
+
+        return res.status(400).json({
+          error:
+            "Video search query is required",
+        });
+      }
+
+      const youtubeKey =
+        process.env.YOUTUBE_API_KEY;
+
+      if (!youtubeKey) {
+
+        return res.status(500).json({
+          error:
+            "YOUTUBE_API_KEY is missing from Render environment variables",
+        });
+      }
+
+      console.log(
+        "YouTube search:",
+        query
+      );
+
+      const response =
+        await axios.get(
+
+          "https://www.googleapis.com/youtube/v3/search",
+
+          {
+            params: {
+
+              part: "snippet",
+
+              q: query.trim(),
+
+              type: "video",
+
+              maxResults: 100,
+
+              key: youtubeKey,
+            },
+
+            timeout: 15000,
+          }
+        );
+
+      const videos =
+        (response.data.items || [])
+          .map((item) => ({
+
+            videoId:
+              item.id?.videoId,
+
+            title:
+              item.snippet?.title ||
+              "YouTube Video",
+
+            description:
+              item.snippet?.description ||
+              "",
+
+            thumbnail:
+              item.snippet
+                ?.thumbnails
+                ?.medium
+                ?.url ||
+              item.snippet
+                ?.thumbnails
+                ?.default
+                ?.url ||
+              "",
+
+            channel:
+              item.snippet
+                ?.channelTitle ||
+              "YouTube",
+          }))
+          .filter(
+            (video) =>
+              video.videoId
+          );
+
+      return res.json({
+        videos,
+      });
+
+    } catch (error) {
+
+      console.error(
+        "================================"
+      );
+
+      console.error(
+        "YOUTUBE API ERROR"
+      );
+
+      console.error(
+        "Status:",
+        error.response?.status
+      );
+
+      console.error(
+        "Message:",
+        error.message
+      );
+
+      console.error(
+        "YouTube response:",
+        JSON.stringify(
+          error.response?.data,
+          null,
+          2
+        )
+      );
+
+      console.error(
+        "================================"
+      );
+
+      return res.status(500).json({
+        error:
+          "Unable to fetch videos",
+      });
+    }
+  }
+);
+
+// =====================================================
 // 404 HANDLER
 // =====================================================
 
 app.use(
   (req, res) => {
+
     res.status(404).json({
       error:
         "Endpoint not found",
@@ -467,6 +627,7 @@ app.use(
     res,
     next
   ) => {
+
     console.error(
       "UNHANDLED SERVER ERROR:",
       err
@@ -490,6 +651,7 @@ const PORT =
 app.listen(
   PORT,
   () => {
+
     console.log(
       "================================"
     );
@@ -508,6 +670,14 @@ app.listen(
     console.log(
       `Sarvam API key: ${
         process.env.SARVAM_API_KEY
+          ? "LOADED"
+          : "MISSING"
+      }`
+    );
+
+    console.log(
+      `YouTube API key: ${
+        process.env.YOUTUBE_API_KEY
           ? "LOADED"
           : "MISSING"
       }`
